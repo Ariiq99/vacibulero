@@ -1,0 +1,158 @@
+[
+  {
+    "id": "animals",
+    "name": "Animals",
+    "emoji": "🐾",
+    "levels": [
+      {
+        "level": 1,
+        "words": [
+          {"word": "cat",      "translation": "kucing",    "phonetic": "/kæt/",       "example": "The cat sat on the mat.",         "wordType": "noun"},
+          {"word": "dog",      "translation": "anjing",    "phonetic": "/dɒɡ/",       "example": "My dog loves to play fetch.",     "wordType": "noun"},
+          {"word": "bird",     "translation": "burung",    "phonetic": "/bɜːrd/",     "example": "A bird sang outside my window.", "wordType": "noun"},
+          {"word": "fish",     "translation": "ikan",      "phonetic": "/fɪʃ/",       "example": "She keeps tropical fish.",       "wordType": "noun"},
+          {"word": "rabbit",   "translation": "kelinci",   "phonetic": "/ˈræb.ɪt/",  "example": "The rabbit hopped away.",        "wordType": "noun"},
+          {"word": "horse",    "translation": "kuda",      "phonetic": "/hɔːrs/",     "example": "She rides a horse every day.",   "wordType": "noun"},
+          {"word": "cow",      "translation": "sapi",      "phonetic": "/kaʊ/",       "example": "The cow grazed in the field.",   "wordType": "noun"},
+          {"word": "pig",      "translation": "babi",      "phonetic": "/pɪɡ/",       "example": "The pig rolled in the mud.",     "wordType": "noun"},
+          {"word": "sheep",    "translation": "domba",     "phonetic": "/ʃiːp/",      "example": "Sheep produce wool.",            "wordType": "noun"},
+          {"word": "duck",     "translation": "bebek",     "phonetic": "/dʌk/",       "example": "Ducks love swimming in ponds.",  "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 2,
+        "words": [
+          {"word": "elephant", "translation": "gajah",     "phonetic": "/ˈel.ɪ.fənt/","example": "Elephants have excellent memory.", "wordType": "noun"},
+          {"word": "tiger",    "translation": "harimau",   "phonetic": "/ˈtaɪ.ɡər/", "example": "The tiger prowled the jungle.",  "wordType": "noun"},
+          {"word": "giraffe",  "translation": "jerapah",   "phonetic": "/dʒɪˈrɑːf/", "example": "A giraffe has a very long neck.","wordType": "noun"},
+          {"word": "penguin",  "translation": "penguin",   "phonetic": "/ˈpeŋ.ɡwɪn/","example": "Penguins can't fly.",            "wordType": "noun"},
+          {"word": "dolphin",  "translation": "lumba-lumba","phonetic": "/ˈdɒl.fɪn/","example": "Dolphins are very intelligent.", "wordType": "noun"},
+          {"word": "gorilla",  "translation": "gorila",    "phonetic": "/ɡəˈrɪl.ə/", "example": "Gorillas live in rainforests.", "wordType": "noun"},
+          {"word": "cheetah",  "translation": "cheetah",   "phonetic": "/ˈtʃiː.tə/", "example": "A cheetah is the fastest land animal.", "wordType": "noun"},
+          {"word": "crocodile","translation": "buaya",     "phonetic": "/ˈkrɒk.ə.daɪl/","example": "Crocodiles live in rivers.", "wordType": "noun"},
+          {"word": "ostrich",  "translation": "burung unta","phonetic": "/ˈɒs.trɪtʃ/","example": "An ostrich cannot fly.",        "wordType": "noun"},
+          {"word": "kangaroo", "translation": "kanguru",   "phonetic": "/ˌkæŋ.ɡəˈruː/","example": "Kangaroos carry their young in pouches.", "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 3,
+        "words": [
+          {"word": "pangolin",    "translation": "trenggiling","phonetic": "/ˈpæŋ.ɡə.lɪn/","example": "Pangolins are covered in scales.", "wordType": "noun"},
+          {"word": "axolotl",     "translation": "axolotl",    "phonetic": "/ˈæk.sə.lɒt.l/","example": "Axolotls can regenerate limbs.", "wordType": "noun"},
+          {"word": "capybara",    "translation": "kapibara",   "phonetic": "/ˌkæp.ɪˈbɑːr.ə/","example": "The capybara is the world's largest rodent.", "wordType": "noun"},
+          {"word": "narwhal",     "translation": "narwhal",    "phonetic": "/ˈnɑːr.wəl/",    "example": "Narwhals have long tusks.",     "wordType": "noun"},
+          {"word": "platypus",    "translation": "platipus",   "phonetic": "/ˈplæt.ɪ.pəs/",  "example": "A platypus is a mammal that lays eggs.", "wordType": "noun"},
+          {"word": "chameleon",   "translation": "bunglon",    "phonetic": "/kəˈmiː.li.ən/",  "example": "A chameleon can change its color.", "wordType": "noun"},
+          {"word": "manatee",     "translation": "duyung",     "phonetic": "/ˈmæn.ə.tiː/",    "example": "Manatees are gentle sea mammals.", "wordType": "noun"},
+          {"word": "tapir",       "translation": "tapir",      "phonetic": "/ˈteɪ.pər/",      "example": "Tapirs are found in tropical forests.", "wordType": "noun"},
+          {"word": "mongoose",    "translation": "musang",     "phonetic": "/ˈmɒŋ.ɡuːs/",    "example": "A mongoose is known for fighting cobras.", "wordType": "noun"},
+          {"word": "flamingo",    "translation": "flamingo",   "phonetic": "/fləˈmɪŋ.ɡəʊ/",  "example": "Flamingos are pink birds.", "wordType": "noun"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "food",
+    "name": "Food",
+    "emoji": "🍕",
+    "levels": [
+      {
+        "level": 1,
+        "words": [
+          {"word": "rice",     "translation": "nasi",      "phonetic": "/raɪs/",     "example": "We eat rice every day.",         "wordType": "noun"},
+          {"word": "bread",    "translation": "roti",      "phonetic": "/bred/",     "example": "She baked fresh bread.",         "wordType": "noun"},
+          {"word": "egg",      "translation": "telur",     "phonetic": "/eɡ/",       "example": "He fried an egg for breakfast.", "wordType": "noun"},
+          {"word": "milk",     "translation": "susu",      "phonetic": "/mɪlk/",     "example": "Drink a glass of milk daily.",   "wordType": "noun"},
+          {"word": "sugar",    "translation": "gula",      "phonetic": "/ˈʃʊɡ.ər/", "example": "Add a spoon of sugar.",          "wordType": "noun"},
+          {"word": "salt",     "translation": "garam",     "phonetic": "/sɔːlt/",    "example": "Don't add too much salt.",       "wordType": "noun"},
+          {"word": "water",    "translation": "air",       "phonetic": "/ˈwɔː.tər/", "example": "Drink plenty of water.",        "wordType": "noun"},
+          {"word": "fruit",    "translation": "buah",      "phonetic": "/fruːt/",    "example": "Eat more fruit every day.",      "wordType": "noun"},
+          {"word": "chicken",  "translation": "ayam",      "phonetic": "/ˈtʃɪk.ɪn/","example": "She cooked grilled chicken.",    "wordType": "noun"},
+          {"word": "noodle",   "translation": "mie",       "phonetic": "/ˈnuː.dl/",  "example": "I love instant noodles.",        "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 2,
+        "words": [
+          {"word": "grilled",    "translation": "dibakar/dipanggang","phonetic": "/ɡrɪld/",       "example": "I ordered grilled salmon.",   "wordType": "adjective"},
+          {"word": "steamed",    "translation": "dikukus",           "phonetic": "/stiːmd/",      "example": "Steamed vegetables are healthy.", "wordType": "adjective"},
+          {"word": "boiled",     "translation": "direbus",           "phonetic": "/bɔɪld/",       "example": "Boiled eggs are easy to make.", "wordType": "adjective"},
+          {"word": "seasoning",  "translation": "bumbu",             "phonetic": "/ˈsiː.zən.ɪŋ/","example": "The seasoning makes it flavorful.", "wordType": "noun"},
+          {"word": "portion",    "translation": "porsi",             "phonetic": "/ˈpɔː.ʃən/",   "example": "She ordered a large portion.", "wordType": "noun"},
+          {"word": "appetizer",  "translation": "makanan pembuka",   "phonetic": "/ˈæp.ɪ.taɪ.zər/","example": "Soup is a light appetizer.", "wordType": "noun"},
+          {"word": "dessert",    "translation": "makanan penutup",   "phonetic": "/dɪˈzɜːrt/",   "example": "Ice cream is a popular dessert.", "wordType": "noun"},
+          {"word": "beverage",   "translation": "minuman",           "phonetic": "/ˈbev.ər.ɪdʒ/","example": "What beverage would you like?", "wordType": "noun"},
+          {"word": "cuisine",    "translation": "masakan",           "phonetic": "/kwɪˈziːn/",   "example": "Italian cuisine is world-famous.", "wordType": "noun"},
+          {"word": "ingredient", "translation": "bahan",             "phonetic": "/ɪnˈɡriː.di.ənt/","example": "Mix all the ingredients together.", "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 3,
+        "words": [
+          {"word": "sauté",      "translation": "tumis",    "phonetic": "/sɔːˈteɪ/",       "example": "Sauté the garlic in olive oil.",   "wordType": "verb"},
+          {"word": "marinate",   "translation": "marinasi", "phonetic": "/ˈmær.ɪ.neɪt/",   "example": "Marinate the chicken overnight.",  "wordType": "verb"},
+          {"word": "garnish",    "translation": "hiasan makanan","phonetic": "/ˈɡɑːr.nɪʃ/","example": "Add a parsley garnish on top.",    "wordType": "noun"},
+          {"word": "fermented",  "translation": "difermentasi","phonetic": "/fəˈmen.tɪd/", "example": "Kimchi is a fermented food.",     "wordType": "adjective"},
+          {"word": "caramelize", "translation": "karamelisasi","phonetic": "/ˈkær.ə.məl.aɪz/","example": "Caramelize the onions slowly.", "wordType": "verb"},
+          {"word": "umami",      "translation": "umami",    "phonetic": "/uːˈmɑːmi/",       "example": "Soy sauce adds an umami flavor.", "wordType": "noun"},
+          {"word": "gluten",     "translation": "gluten",   "phonetic": "/ˈɡluː.tən/",      "example": "Some people avoid gluten.",       "wordType": "noun"},
+          {"word": "blanch",     "translation": "blansir",  "phonetic": "/blɑːntʃ/",        "example": "Blanch the vegetables briefly.",  "wordType": "verb"},
+          {"word": "infuse",     "translation": "menyeduh/meresap","phonetic": "/ɪnˈfjuːz/","example": "Infuse the tea for 3 minutes.", "wordType": "verb"},
+          {"word": "delicacy",   "translation": "makanan istimewa","phonetic": "/ˈdel.ɪ.kə.si/","example": "Truffle is an expensive delicacy.", "wordType": "noun"}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "travel",
+    "name": "Travel",
+    "emoji": "✈️",
+    "levels": [
+      {
+        "level": 1,
+        "words": [
+          {"word": "airport",   "translation": "bandara",    "phonetic": "/ˈeər.pɔːrt/", "example": "We arrived at the airport early.", "wordType": "noun"},
+          {"word": "hotel",     "translation": "hotel",      "phonetic": "/həʊˈtel/",     "example": "We stayed at a luxury hotel.",    "wordType": "noun"},
+          {"word": "ticket",    "translation": "tiket",      "phonetic": "/ˈtɪk.ɪt/",    "example": "I booked a round-trip ticket.",   "wordType": "noun"},
+          {"word": "passport",  "translation": "paspor",     "phonetic": "/ˈpɑːs.pɔːrt/","example": "Don't forget your passport!",     "wordType": "noun"},
+          {"word": "luggage",   "translation": "bagasi",     "phonetic": "/ˈlʌɡ.ɪdʒ/",   "example": "My luggage was too heavy.",       "wordType": "noun"},
+          {"word": "map",       "translation": "peta",       "phonetic": "/mæp/",         "example": "Use a map to find the hotel.",    "wordType": "noun"},
+          {"word": "currency",  "translation": "mata uang",  "phonetic": "/ˈkʌr.ən.si/", "example": "Exchange currency at the bank.",  "wordType": "noun"},
+          {"word": "tourist",   "translation": "turis",      "phonetic": "/ˈtʊər.ɪst/",  "example": "Bali attracts many tourists.",    "wordType": "noun"},
+          {"word": "flight",    "translation": "penerbangan","phonetic": "/flaɪt/",       "example": "Our flight departs at 8 AM.",     "wordType": "noun"},
+          {"word": "departure", "translation": "keberangkatan","phonetic": "/dɪˈpɑːr.tʃər/","example": "Check the departure board.", "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 2,
+        "words": [
+          {"word": "itinerary",  "translation": "rencana perjalanan","phonetic": "/aɪˈtɪn.ər.ər.i/","example": "We planned a detailed itinerary.", "wordType": "noun"},
+          {"word": "landmark",   "translation": "tempat bersejarah","phonetic": "/ˈlænd.mɑːrk/","example": "The Eiffel Tower is a famous landmark.", "wordType": "noun"},
+          {"word": "souvenir",   "translation": "oleh-oleh","phonetic": "/ˌsuː.vəˈnɪər/","example": "I bought a souvenir for my family.", "wordType": "noun"},
+          {"word": "accommodation","translation": "akomodasi","phonetic": "/əˌkɒm.əˈdeɪ.ʃən/","example": "The accommodation was very comfortable.", "wordType": "noun"},
+          {"word": "reservation","translation": "reservasi","phonetic": "/ˌrez.əˈveɪ.ʃən/","example": "I made a restaurant reservation.", "wordType": "noun"},
+          {"word": "transit",    "translation": "transit",  "phonetic": "/ˈtræn.zɪt/",  "example": "We had a 2-hour transit in Singapore.", "wordType": "noun"},
+          {"word": "customs",    "translation": "bea cukai","phonetic": "/ˈkʌs.təmz/",  "example": "Declare items at customs.",       "wordType": "noun"},
+          {"word": "backpacker", "translation": "ransel/petualang","phonetic": "/ˈbæk.pæk.ər/","example": "She is an experienced backpacker.", "wordType": "noun"},
+          {"word": "scenic",     "translation": "indah/pemandangan","phonetic": "/ˈsiː.nɪk/","example": "We took the scenic route.", "wordType": "adjective"},
+          {"word": "excursion",  "translation": "wisata singkat","phonetic": "/ɪkˈskɜːr.ʒən/","example": "We went on a boat excursion.", "wordType": "noun"}
+        ]
+      },
+      {
+        "level": 3,
+        "words": [
+          {"word": "wanderlust", "translation": "hasrat berpetualang","phonetic": "/ˈwɒn.də.lʌst/","example": "Wanderlust drove her to explore the world.", "wordType": "noun"},
+          {"word": "pilgrimage", "translation": "ziarah",  "phonetic": "/ˈpɪl.ɡrɪ.mɪdʒ/","example": "They made a pilgrimage to Mecca.", "wordType": "noun"},
+          {"word": "nomadic",    "translation": "nomaden", "phonetic": "/nəʊˈmæd.ɪk/", "example": "She lives a nomadic lifestyle.", "wordType": "adjective"},
+          {"word": "traverse",   "translation": "menyeberangi","phonetic": "/trəˈvɜːrs/","example": "They traversed the entire continent.", "wordType": "verb"},
+          {"word": "embarkation","translation": "pemberangkatan","phonetic": "/ˌem.bɑːˈkeɪ.ʃən/","example": "Embarkation begins at gate 12.", "wordType": "noun"},
+          {"word": "quarantine", "translation": "karantina","phonetic": "/ˈkwɒr.ən.tiːn/","example": "Travelers must undergo quarantine.", "wordType": "noun"},
+          {"word": "visa",       "translation": "visa",    "phonetic": "/ˈviː.zə/",     "example": "You need a visa to enter that country.", "wordType": "noun"},
+          {"word": "expedition", "translation": "ekspedisi","phonetic": "/ˌek.spɪˈdɪʃ.ən/","example": "The expedition reached the summit.", "wordType": "noun"},
+          {"word": "layover",    "translation": "singgah",  "phonetic": "/ˈleɪ.oʊ.vər/","example": "We had a 6-hour layover in Dubai.", "wordType": "noun"},
+          {"word": "desolate",   "translation": "terpencil/sunyi","phonetic": "/ˈdes.ə.lət/","example": "They found a desolate beach.", "wordType": "adjective"}
+        ]
+      }
+    ]
+  }
+]
