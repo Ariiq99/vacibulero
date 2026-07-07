@@ -3,12 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../viewmodels/add_word_viewmodel.dart';
 import '../../viewmodels/treasury_viewmodel.dart';
+import '../../models/word_item.dart';
+import '../../repositories/dictionary_repository.dart';
+import '../../services/app_theme.dart';
 import '../../router/app_router.dart';
 
-// ── VIEW: AddWordScreen ────────────────────────────────────────
-// Halaman pencarian dan penyimpanan kata baru ke Word Treasury.
-// Menggunakan Consumer<AddWordViewModel> untuk state lookup,
-// dan context.read<TreasuryViewModel>() untuk menyimpan kata.
 class AddWordScreen extends StatefulWidget {
   const AddWordScreen({super.key});
   @override
@@ -16,12 +15,11 @@ class AddWordScreen extends StatefulWidget {
 }
 
 class _AddWordScreenState extends State<AddWordScreen> {
-  final _controller = TextEditingController();
+  final _ctrl = TextEditingController();
 
   @override
   void dispose() {
-    _controller.dispose();
-    // Reset ViewModel saat keluar halaman
+    _ctrl.dispose();
     context.read<AddWordViewModel>().reset();
     super.dispose();
   }
@@ -29,6 +27,7 @@ class _AddWordScreenState extends State<AddWordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: VaciColors.surface,
       appBar: AppBar(
         title: const Text('Tambah Kata'),
         leading: IconButton(
@@ -38,18 +37,30 @@ class _AddWordScreenState extends State<AddWordScreen> {
       ),
       body: Column(
         children: [
-          // ── Search area ──
-          Padding(
-            padding: const EdgeInsets.all(16),
+          // ── Search bar ──
+          Container(
+            color: VaciColors.primary,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _controller,
+                    controller: _ctrl,
                     textInputAction: TextInputAction.search,
-                    decoration: const InputDecoration(
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
                       hintText: 'Ketik kata Inggris...',
-                      prefixIcon: Icon(Icons.search),
+                      hintStyle: const TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white70,
+                      ),
                     ),
                     onSubmitted: (_) => _lookup(),
                   ),
@@ -58,14 +69,25 @@ class _AddWordScreenState extends State<AddWordScreen> {
                 Consumer<AddWordViewModel>(
                   builder: (_, vm, __) => ElevatedButton(
                     onPressed: vm.isLoading ? null : _lookup,
-                    style: ElevatedButton.styleFrom(minimumSize: const Size(70, 50)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: VaciColors.primary,
+                      minimumSize: const Size(70, 52),
+                      disabledBackgroundColor: Colors.white54,
+                    ),
                     child: vm.isLoading
                         ? const SizedBox(
-                            width: 20, height: 20,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
+                              color: VaciColors.primary,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : const Text('Cari'),
+                        : const Text(
+                            'Cari',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
                   ),
                 ),
               ],
@@ -73,64 +95,137 @@ class _AddWordScreenState extends State<AddWordScreen> {
           ),
 
           // ── Result area ──
-          // Consumer listen ke AddWordViewModel
           Expanded(
             child: Consumer<AddWordViewModel>(
               builder: (context, vm, _) {
                 if (vm.status == AddWordStatus.error) {
-                  return _ErrorState(message: vm.error ?? 'Terjadi kesalahan.');
+                  return _ErrorView(message: vm.error ?? 'Terjadi kesalahan.');
                 }
-                if (!vm.hasResult) {
-                  return const _IdleState();
-                }
+                if (!vm.hasResult) return const _IdleView();
+
                 final r = vm.result!;
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       // ── Result card ──
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(r.word,
-                                      style: const TextStyle(
-                                          fontSize: 24, fontWeight: FontWeight.bold)),
-                                  const SizedBox(width: 10),
-                                  _TypeBadge(r.wordType.name),
-                                ],
-                              ),
-                              if (r.phonetic.isNotEmpty)
-                                Text(r.phonetic,
-                                    style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                              const Divider(height: 20),
-                              _InfoRow('Terjemahan (ID)', r.translation),
-                              const SizedBox(height: 8),
-                              _InfoRow('Definisi (EN)', r.definition),
-                              if (r.example.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                _InfoRow('Contoh kalimat', '"${r.example}"'),
+                      VaciCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Word + type
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        r.word,
+                                        style: const TextStyle(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                          color: VaciColors.dark,
+                                        ),
+                                      ),
+                                      if (r.phonetic.isNotEmpty)
+                                        Text(
+                                          r.phonetic,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: VaciColors.textSecondary,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                WordTypeBadge(
+                                  r.wordType.name[0].toUpperCase() +
+                                      r.wordType.name.substring(1),
+                                ),
                               ],
+                            ),
+                            const SizedBox(height: 14),
+                            const Divider(color: VaciColors.divider),
+                            const SizedBox(height: 14),
+
+                            // Terjemahan
+                            _InfoSection(
+                              icon: Icons.translate,
+                              color: VaciColors.primary,
+                              label: 'Terjemahan (Bahasa Indonesia)',
+                              value: r.translation,
+                              bold: true,
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Definisi ID
+                            _InfoSection(
+                              icon: Icons.menu_book_outlined,
+                              color: VaciColors.success,
+                              label: 'Definisi (Bahasa Indonesia)',
+                              value: r.definitionID.isNotEmpty
+                                  ? r.definitionID
+                                  : r.definitionEN,
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Definisi EN (toggle)
+                            if (r.definitionEN.isNotEmpty &&
+                                r.definitionID.isNotEmpty)
+                              _InfoSection(
+                                icon: Icons.language,
+                                color: VaciColors.textSecondary,
+                                label: 'Definisi (English)',
+                                value: r.definitionEN,
+                                muted: true,
+                              ),
+
+                            // Contoh kalimat
+                            if (r.example.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              _InfoSection(
+                                icon: Icons.format_quote,
+                                color: VaciColors.gold,
+                                label: 'Contoh Kalimat',
+                                value: '"${r.example}"',
+                                italic: true,
+                              ),
                             ],
-                          ),
+
+                            // Contoh kalimat terjemahan
+                            if (r.exampleID.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _InfoSection(
+                                icon: Icons.format_quote_outlined,
+                                color: VaciColors.goldDark,
+                                label: 'Terjemahan Contoh',
+                                value: '"${r.exampleID}"',
+                                italic: true,
+                                muted: true,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
 
                       // ── Save button ──
-                      ElevatedButton.icon(
+                      VaciButton(
+                        label: 'Simpan ke Treasury 🏴',
+                        icon: Icons.save_outlined,
                         onPressed: () => _saveWord(context, vm),
-                        icon: const Icon(Icons.save),
-                        label: const Text('Simpan ke Treasury'),
                       ),
                       const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () { _controller.clear(); vm.reset(); },
-                        child: const Text('Cari kata lain'),
+                      TextButton.icon(
+                        onPressed: () {
+                          _ctrl.clear();
+                          vm.reset();
+                        },
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Cari kata lain'),
                       ),
                     ],
                   ),
@@ -144,22 +239,36 @@ class _AddWordScreenState extends State<AddWordScreen> {
   }
 
   void _lookup() {
-    final word = _controller.text.trim();
+    final word = _ctrl.text.trim();
     if (word.isEmpty) return;
-    // context.read → panggil action tanpa trigger rebuild
     context.read<AddWordViewModel>().lookupWord(word);
   }
 
   Future<void> _saveWord(BuildContext ctx, AddWordViewModel vm) async {
     try {
-      final item = vm.buildWordItem();
-      // Simpan ke TreasuryViewModel
+      final r = vm.result!;
+      final item = WordItem(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        word: r.word,
+        translation: r.translation,
+        wordType: r.wordType,
+        definitionEN: r.definitionEN,
+        definitionID: r.definitionID,
+        example: r.example,
+        exampleID: r.exampleID,
+        phonetic: r.phonetic,
+        addedAt: DateTime.now(),
+      );
       await ctx.read<TreasuryViewModel>().addWord(item);
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(
           SnackBar(
-            content: Text('"${item.word}" berhasil ditambahkan ke Treasury! ✅'),
-            backgroundColor: Colors.green,
+            content: Text('"${item.word}" berhasil disimpan ke Treasury! ✅'),
+            backgroundColor: VaciColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         ctx.go(AppRoutes.treasury);
@@ -167,77 +276,157 @@ class _AddWordScreenState extends State<AddWordScreen> {
     } catch (e) {
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: VaciColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
   }
 }
 
-class _InfoRow extends StatelessWidget {
+// ── Info Section ──
+class _InfoSection extends StatelessWidget {
+  final IconData icon;
+  final Color color;
   final String label, value;
-  const _InfoRow(this.label, this.value);
+  final bool bold, italic, muted;
+
+  const _InfoSection({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+    this.bold = false,
+    this.italic = false,
+    this.muted = false,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 14, height: 1.5)),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 16),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: muted ? VaciColors.textSecondary : color,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+                  fontStyle: italic ? FontStyle.italic : FontStyle.normal,
+                  color: muted
+                      ? VaciColors.textSecondary
+                      : VaciColors.textPrimary,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
-class _TypeBadge extends StatelessWidget {
-  final String type;
-  const _TypeBadge(this.type);
+class _IdleView extends StatelessWidget {
+  const _IdleView();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F0FE),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(type, style: const TextStyle(fontSize: 12, color: Color(0xFF1A73E8), fontWeight: FontWeight.bold)),
-    );
-  }
-}
-
-class _IdleState extends StatelessWidget {
-  const _IdleState();
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('🔍', style: TextStyle(fontSize: 48)),
-          SizedBox(height: 12),
-          Text('Ketik kata dan tekan Cari', style: TextStyle(color: Colors.grey)),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: VaciColors.primaryLight,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: Text('🔍', style: TextStyle(fontSize: 36)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Ketik kata dan tekan Cari',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: VaciColors.dark,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Definisi akan muncul dalam Bahasa Indonesia',
+            style: TextStyle(fontSize: 12, color: VaciColors.textSecondary),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ErrorState extends StatelessWidget {
+class _ErrorView extends StatelessWidget {
   final String message;
-  const _ErrorState({required this.message});
+  const _ErrorView({required this.message});
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red)),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: VaciColors.errorLight,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Center(
+                child: Text('😕', style: TextStyle(fontSize: 32)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Kata tidak ditemukan',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: VaciColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       ),

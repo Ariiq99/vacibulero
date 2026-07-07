@@ -13,22 +13,22 @@ class QuizViewModel extends ChangeNotifier {
   QuizViewModel(this._repo);
 
   // ── State ──
-  QuizStatus          _status    = QuizStatus.idle;
-  List<QuizQuestion>  _questions = [];
-  int                 _current   = 0;
-  Map<String, String> _answers   = {}; // {wordId: jawaban}
-  String?             _selected;       // opsi yang dipilih saat ini
-  QuizSession?        _session;
-  String?             _error;
+  QuizStatus _status = QuizStatus.idle;
+  List<QuizQuestion> _questions = [];
+  int _current = 0;
+  Map<String, String> _answers = {}; // {wordId: jawaban}
+  String? _selected; // opsi yang dipilih saat ini
+  QuizSession? _session;
+  String? _error;
 
   // ── Getters ──
-  QuizStatus      get status      => _status;
-  int             get currentIdx  => _current;
-  int             get totalQ      => _questions.length;
-  String?         get selected    => _selected;
-  QuizSession?    get session     => _session;
-  String?         get error       => _error;
-  bool            get isFinished  => _status == QuizStatus.finished;
+  QuizStatus get status => _status;
+  int get currentIdx => _current;
+  int get totalQ => _questions.length;
+  String? get selected => _selected;
+  QuizSession? get session => _session;
+  String? get error => _error;
+  bool get isFinished => _status == QuizStatus.finished;
 
   QuizQuestion? get currentQuestion =>
       _current < _questions.length ? _questions[_current] : null;
@@ -40,14 +40,14 @@ class QuizViewModel extends ChangeNotifier {
   void startQuiz(List<WordItem> words) {
     try {
       _questions = _repo.generateQuestions(words, count: 10);
-      _current   = 0;
-      _answers   = {};
-      _selected  = null;
-      _session   = null;
-      _error     = null;
-      _status    = QuizStatus.inProgress;
+      _current = 0;
+      _answers = {};
+      _selected = null;
+      _session = null;
+      _error = null;
+      _status = QuizStatus.inProgress;
     } catch (e) {
-      _error  = e.toString();
+      _error = e.toString();
       _status = QuizStatus.idle;
     }
     notifyListeners();
@@ -82,19 +82,19 @@ class QuizViewModel extends ChangeNotifier {
   // ── Private: selesaikan sesi ──
   void _finishQuiz() {
     _session = _repo.evaluateSession(_questions, _answers);
-    _status  = QuizStatus.finished;
+    _status = QuizStatus.finished;
     notifyListeners();
   }
 
   // ── RESET: kembali ke idle ──
   void reset() {
-    _status    = QuizStatus.idle;
+    _status = QuizStatus.idle;
     _questions = [];
-    _current   = 0;
-    _answers   = {};
-    _selected  = null;
-    _session   = null;
-    _error     = null;
+    _current = 0;
+    _answers = {};
+    _selected = null;
+    _session = null;
+    _error = null;
     notifyListeners();
   }
 }

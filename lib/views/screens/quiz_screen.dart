@@ -19,7 +19,7 @@ class QuizScreen extends StatelessWidget {
           return _IdlePage(
             wordCount: treasuryVm.totalWords,
             onStart: () => quizVm.startQuiz(treasuryVm.allWords),
-            onBack:  () => context.go(AppRoutes.home),
+            onBack: () => context.go(AppRoutes.home),
           );
         }
 
@@ -42,19 +42,21 @@ class QuizScreen extends StatelessWidget {
             title: const Text('Treasure Check! ✅'),
             leading: IconButton(
               icon: const Icon(Icons.close),
-              onPressed: () { quizVm.reset(); context.go(AppRoutes.home); },
+              onPressed: () {
+                quizVm.reset();
+                context.go(AppRoutes.home);
+              },
             ),
           ),
           body: Column(
             children: [
               // ── Progress bar ──
-              LinearProgressIndicator(
-                value: quizVm.progress,
-                minHeight: 5,
-              ),
+              LinearProgressIndicator(value: quizVm.progress, minHeight: 5),
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -65,15 +67,15 @@ class QuizScreen extends StatelessWidget {
                     // Arah soal badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F0FE),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        q.direction.name == 'enToId'
-                            ? 'EN → ID'
-                            : 'ID → EN',
+                        q.direction.name == 'enToId' ? 'EN → ID' : 'ID → EN',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFF1A73E8),
@@ -135,12 +137,12 @@ class QuizScreen extends StatelessWidget {
 
                         if (selected != null) {
                           if (opt == q.correctAnswer) {
-                            bg       = Colors.green.shade50;
-                            fg       = Colors.green.shade700;
+                            bg = Colors.green.shade50;
+                            fg = Colors.green.shade700;
                             trailIcon = Icons.check_circle;
                           } else if (opt == selected) {
-                            bg       = Colors.red.shade50;
-                            fg       = Colors.red.shade700;
+                            bg = Colors.red.shade50;
+                            fg = Colors.red.shade700;
                             trailIcon = Icons.cancel;
                           }
                         }
@@ -159,7 +161,9 @@ class QuizScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
@@ -182,8 +186,7 @@ class QuizScreen extends StatelessWidget {
                                         ),
                                       ),
                                       if (trailIcon != null)
-                                        Icon(trailIcon,
-                                            color: fg, size: 20),
+                                        Icon(trailIcon, color: fg, size: 20),
                                     ],
                                   ),
                                 ),
@@ -255,8 +258,7 @@ class _IdlePage extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Treasure Check!',
-                style: TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -276,9 +278,7 @@ class _IdlePage extends StatelessWidget {
                   children: [
                     Icon(
                       canStart ? Icons.storage : Icons.warning_amber,
-                      color: canStart
-                          ? const Color(0xFF1A73E8)
-                          : Colors.orange,
+                      color: canStart ? const Color(0xFF1A73E8) : Colors.orange,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -286,7 +286,7 @@ class _IdlePage extends StatelessWidget {
                         canStart
                             ? '$wordCount kata siap diuji'
                             : 'Minimal 4 kata di Treasury.\n'
-                              'Sekarang ada $wordCount kata.',
+                                  'Sekarang ada $wordCount kata.',
                         style: TextStyle(
                           color: canStart
                               ? const Color(0xFF1A73E8)
@@ -301,9 +301,10 @@ class _IdlePage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: canStart ? onStart : null,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Mulai Kuis',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Mulai Kuis',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),

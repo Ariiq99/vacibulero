@@ -24,12 +24,10 @@ class ExpeditionRepository {
   // ── READ: baca progres satu level ──
   Future<ExpeditionProgress?> getProgress(String themeId, int level) async {
     final prefs = await SharedPreferences.getInstance();
-    final key   = '$_progressPrefix${themeId}_$level';
-    final raw   = prefs.getString(key);
+    final key = '$_progressPrefix${themeId}_$level';
+    final raw = prefs.getString(key);
     if (raw == null) return null;
-    return ExpeditionProgress.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
-    );
+    return ExpeditionProgress.fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
   // ── READ: baca semua progres pengguna ──
@@ -51,9 +49,9 @@ class ExpeditionRepository {
   // ── UPDATE: tandai kata sebagai hafal ──
   Future<ExpeditionProgress> markWordLearned({
     required String themeId,
-    required int    level,
+    required int level,
     required String word,
-    required int    totalWords,
+    required int totalWords,
   }) async {
     // Ambil progres yang ada, atau buat baru jika belum ada
     final existing = await getProgress(themeId, level);
@@ -62,11 +60,11 @@ class ExpeditionRepository {
     final isCompleted = completed.length >= totalWords;
 
     final updated = ExpeditionProgress(
-      themeId:        themeId,
-      level:          level,
+      themeId: themeId,
+      level: level,
       completedWords: completed,
-      isCompleted:    isCompleted,
-      completedAt:    isCompleted ? DateTime.now() : existing?.completedAt,
+      isCompleted: isCompleted,
+      completedAt: isCompleted ? DateTime.now() : existing?.completedAt,
     );
 
     await _saveProgress(updated);
@@ -76,7 +74,7 @@ class ExpeditionRepository {
   // ── Private: simpan progress ──
   Future<void> _saveProgress(ExpeditionProgress p) async {
     final prefs = await SharedPreferences.getInstance();
-    final key   = '$_progressPrefix${p.key}';
+    final key = '$_progressPrefix${p.key}';
     await prefs.setString(key, jsonEncode(p.toJson()));
   }
 }

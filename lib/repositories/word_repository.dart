@@ -12,7 +12,7 @@ class WordRepository {
   // ── READ: ambil semua kata ──
   Future<List<WordItem>> getAll() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(_key);
+    final raw = prefs.getString(_key);
     if (raw == null) return [];
 
     final List decoded = jsonDecode(raw) as List;
@@ -54,11 +54,14 @@ class WordRepository {
   Future<List<WordItem>> search(String query) async {
     if (query.trim().isEmpty) return getAll();
     final all = await getAll();
-    final q   = query.toLowerCase();
-    return all.where((w) =>
-      w.word.toLowerCase().contains(q) ||
-      w.translation.toLowerCase().contains(q),
-    ).toList();
+    final q = query.toLowerCase();
+    return all
+        .where(
+          (w) =>
+              w.word.toLowerCase().contains(q) ||
+              w.translation.toLowerCase().contains(q),
+        )
+        .toList();
   }
 
   // ── FILTER: filter berdasarkan jenis kata ──

@@ -14,31 +14,31 @@ class ExpeditionViewModel extends ChangeNotifier {
   ExpeditionViewModel(this._repo);
 
   // ── State: daftar tema ──
-  List<ExpeditionTheme>            _themes   = [];
-  Map<String, ExpeditionProgress>  _progress = {};
-  bool                             _isLoading = false;
-  String?                          _error;
+  List<ExpeditionTheme> _themes = [];
+  Map<String, ExpeditionProgress> _progress = {};
+  bool _isLoading = false;
+  String? _error;
 
   // ── State: sesi flip card aktif ──
-  ExpeditionTheme?   _activeTheme;
-  int                _activeLevel = 1;
-  int                _cardIndex   = 0;
-  bool               _isFlipped   = false;
-  List<String>       _learnedInSession = [];
-  List<String>       _unknownInSession = [];
+  ExpeditionTheme? _activeTheme;
+  int _activeLevel = 1;
+  int _cardIndex = 0;
+  bool _isFlipped = false;
+  List<String> _learnedInSession = [];
+  List<String> _unknownInSession = [];
 
   // ── Getters: tema ──
-  List<ExpeditionTheme>           get themes    => _themes;
-  Map<String, ExpeditionProgress> get progress  => _progress;
-  bool                            get isLoading => _isLoading;
-  String?                         get error     => _error;
+  List<ExpeditionTheme> get themes => _themes;
+  Map<String, ExpeditionProgress> get progress => _progress;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   // ── Getters: sesi flip card ──
-  ExpeditionTheme? get activeTheme  => _activeTheme;
-  int              get activeLevel  => _activeLevel;
-  bool             get isFlipped    => _isFlipped;
-  int              get learnedCount => _learnedInSession.length;
-  int              get unknownCount => _unknownInSession.length;
+  ExpeditionTheme? get activeTheme => _activeTheme;
+  int get activeLevel => _activeLevel;
+  bool get isFlipped => _isFlipped;
+  int get learnedCount => _learnedInSession.length;
+  int get unknownCount => _unknownInSession.length;
 
   // Kartu yang sedang ditampilkan
   ExpeditionWord? get currentCard {
@@ -51,9 +51,10 @@ class ExpeditionViewModel extends ChangeNotifier {
   // Semua kata di level aktif
   List<ExpeditionWord> get _currentWords {
     if (_activeTheme == null) return [];
-    final lvl = _activeTheme!.levels
-        .firstWhere((l) => l.level == _activeLevel,
-                    orElse: () => ExpeditionLevel(level: 1, words: []));
+    final lvl = _activeTheme!.levels.firstWhere(
+      (l) => l.level == _activeLevel,
+      orElse: () => ExpeditionLevel(level: 1, words: []),
+    );
     return lvl.words;
   }
 
@@ -85,9 +86,9 @@ class ExpeditionViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _themes   = await _repo.loadThemes();
+      _themes = await _repo.loadThemes();
       _progress = await _repo.getAllProgress();
-      _error    = null;
+      _error = null;
     } catch (e) {
       _error = e.toString();
     }
@@ -97,12 +98,12 @@ class ExpeditionViewModel extends ChangeNotifier {
 
   // ── START: mulai sesi flip card ──
   void startSession(ExpeditionTheme theme, int level) {
-    _activeTheme        = theme;
-    _activeLevel        = level;
-    _cardIndex          = 0;
-    _isFlipped          = false;
-    _learnedInSession   = [];
-    _unknownInSession   = [];
+    _activeTheme = theme;
+    _activeLevel = level;
+    _cardIndex = 0;
+    _isFlipped = false;
+    _learnedInSession = [];
+    _unknownInSession = [];
     notifyListeners();
   }
 
@@ -121,9 +122,9 @@ class ExpeditionViewModel extends ChangeNotifier {
 
     // Simpan progres ke repository
     await _repo.markWordLearned(
-      themeId:    _activeTheme!.id,
-      level:      _activeLevel,
-      word:       card.word,
+      themeId: _activeTheme!.id,
+      level: _activeLevel,
+      word: card.word,
       totalWords: totalCards,
     );
 
@@ -132,14 +133,16 @@ class ExpeditionViewModel extends ChangeNotifier {
 
     // Buat WordItem untuk ditambah ke Treasury (dikembalikan ke View)
     final wordItem = WordItem(
-      id:          DateTime.now().millisecondsSinceEpoch.toString(),
-      word:        card.word,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      word: card.word,
       translation: card.translation,
-      wordType:    _parseWordType(card.wordType),
-      definition:  '',
-      example:     card.example,
-      phonetic:    card.phonetic,
-      addedAt:     DateTime.now(),
+      wordType: _parseWordType(card.wordType),
+      definitionEN: '',
+      definitionID: '',
+      example: card.example,
+      exampleID: '',
+      phonetic: card.phonetic,
+      addedAt: DateTime.now(),
     );
 
     _nextCard();
@@ -163,11 +166,16 @@ class ExpeditionViewModel extends ChangeNotifier {
 
   WordType _parseWordType(String type) {
     switch (type.toLowerCase()) {
-      case 'noun':      return WordType.noun;
-      case 'verb':      return WordType.verb;
-      case 'adjective': return WordType.adjective;
-      case 'adverb':    return WordType.adverb;
-      default:          return WordType.other;
+      case 'noun':
+        return WordType.noun;
+      case 'verb':
+        return WordType.verb;
+      case 'adjective':
+        return WordType.adjective;
+      case 'adverb':
+        return WordType.adverb;
+      default:
+        return WordType.other;
     }
   }
 }

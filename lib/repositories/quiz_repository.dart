@@ -9,10 +9,7 @@ class QuizRepository {
 
   // ── Generate satu sesi soal dari list kata ──
   // Menghasilkan campuran soal pilihan ganda (EN→ID dan ID→EN)
-  List<QuizQuestion> generateQuestions(
-    List<WordItem> words, {
-    int count = 10,
-  }) {
+  List<QuizQuestion> generateQuestions(List<WordItem> words, {int count = 10}) {
     if (words.length < 2) {
       throw Exception(
         'Minimal 2 kata di Treasury untuk memulai Treasure Check!',
@@ -32,17 +29,15 @@ class QuizRepository {
 
   // ── Buat soal pilihan ganda ──
   QuizQuestion _buildMultipleChoice(
-    WordItem   target,
+    WordItem target,
     List<WordItem> allWords,
-    bool       isEnToId,
+    bool isEnToId,
   ) {
-    final questionText  = isEnToId ? target.word        : target.translation;
+    final questionText = isEnToId ? target.word : target.translation;
     final correctAnswer = isEnToId ? target.translation : target.word;
 
     // Ambil 3 pengecoh dari kata-kata lain
-    final distractors = allWords
-        .where((w) => w.id != target.id)
-        .toList()
+    final distractors = allWords.where((w) => w.id != target.id).toList()
       ..shuffle(_random);
 
     final wrongOptions = distractors
@@ -54,12 +49,12 @@ class QuizRepository {
     final options = [correctAnswer, ...wrongOptions]..shuffle(_random);
 
     return QuizQuestion(
-      wordId:        target.id,
-      questionText:  questionText,
+      wordId: target.id,
+      questionText: questionText,
       correctAnswer: correctAnswer,
-      options:       options,
-      direction:     isEnToId ? QuizDirection.enToId : QuizDirection.idToEn,
-      type:          QuizType.multipleChoice,
+      options: options,
+      direction: isEnToId ? QuizDirection.enToId : QuizDirection.idToEn,
+      type: QuizType.multipleChoice,
     );
   }
 
@@ -69,23 +64,23 @@ class QuizRepository {
     Map<String, String> userAnswers, // {wordId: jawaban}
   ) {
     final answers = questions.map((q) {
-      final userAns     = userAnswers[q.wordId] ?? '';
-      final isCorrect   = userAns.toLowerCase().trim() ==
-                          q.correctAnswer.toLowerCase().trim();
+      final userAns = userAnswers[q.wordId] ?? '';
+      final isCorrect =
+          userAns.toLowerCase().trim() == q.correctAnswer.toLowerCase().trim();
       return QuizAnswer(
-        wordId:        q.wordId,
-        userAnswer:    userAns,
+        wordId: q.wordId,
+        userAnswer: userAns,
         correctAnswer: q.correctAnswer,
-        isCorrect:     isCorrect,
+        isCorrect: isCorrect,
       );
     }).toList();
 
     return QuizSession(
-      id:             DateTime.now().millisecondsSinceEpoch.toString(),
-      date:           DateTime.now(),
-      answers:        answers,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      date: DateTime.now(),
+      answers: answers,
       totalQuestions: questions.length,
-      correctCount:   answers.where((a) => a.isCorrect).length,
+      correctCount: answers.where((a) => a.isCorrect).length,
     );
   }
 }

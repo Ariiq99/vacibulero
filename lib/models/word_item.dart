@@ -1,18 +1,15 @@
-// ── MODEL: WordItem ────────────────────────────────────────────
-// Merepresentasikan satu kata kosakata di Word Treasury.
-// Model hanya berisi data dan logika konversi (fromJson/toJson).
-// Tidak boleh ada UI atau state management di sini.
-
 enum WordType { noun, verb, adjective, adverb, other }
 
 class WordItem {
-  final String   id;
-  final String   word;
-  final String   translation;   // Bahasa Indonesia
+  final String id;
+  final String word;
+  final String translation;
   final WordType wordType;
-  final String   definition;    // Definisi bahasa Inggris
-  final String   example;       // Contoh kalimat
-  final String   phonetic;      // Fonetik, misal: /ˈɛl.ə.kwənt/
+  final String definitionEN; // definisi bahasa Inggris (asli)
+  final String definitionID; // definisi bahasa Indonesia (terjemahan)
+  final String example;
+  final String exampleID; // contoh kalimat bahasa Indonesia
+  final String phonetic;
   final DateTime addedAt;
 
   const WordItem({
@@ -20,67 +17,85 @@ class WordItem {
     required this.word,
     required this.translation,
     required this.wordType,
-    required this.definition,
+    required this.definitionEN,
+    required this.definitionID,
     required this.example,
+    required this.exampleID,
     required this.phonetic,
     required this.addedAt,
   });
 
-  // ── Factory: dari JSON (untuk load dari SharedPreferences) ──
+  // Getter untuk kemudahan — tampilkan definisi ID jika ada
+  String get definition =>
+      definitionID.isNotEmpty ? definitionID : definitionEN;
+
   factory WordItem.fromJson(Map<String, dynamic> json) {
     return WordItem(
-      id:          json['id']          as String,
-      word:        json['word']         as String,
-      translation: json['translation']  as String,
-      wordType:    WordType.values.firstWhere(
+      id: json['id'] as String,
+      word: json['word'] as String,
+      translation: json['translation'] as String,
+      wordType: WordType.values.firstWhere(
         (e) => e.name == (json['wordType'] as String),
         orElse: () => WordType.other,
       ),
-      definition:  json['definition']   as String,
-      example:     json['example']      as String,
-      phonetic:    json['phonetic']     as String? ?? '',
-      addedAt:     DateTime.parse(json['addedAt'] as String),
+      definitionEN:
+          json['definitionEN'] as String? ??
+          json['definition'] as String? ??
+          '',
+      definitionID: json['definitionID'] as String? ?? '',
+      example: json['example'] as String? ?? '',
+      exampleID: json['exampleID'] as String? ?? '',
+      phonetic: json['phonetic'] as String? ?? '',
+      addedAt: DateTime.parse(json['addedAt'] as String),
     );
   }
 
-  // ── toJson: untuk simpan ke SharedPreferences ──
   Map<String, dynamic> toJson() => {
-    'id':          id,
-    'word':        word,
+    'id': id,
+    'word': word,
     'translation': translation,
-    'wordType':    wordType.name,
-    'definition':  definition,
-    'example':     example,
-    'phonetic':    phonetic,
-    'addedAt':     addedAt.toIso8601String(),
+    'wordType': wordType.name,
+    'definitionEN': definitionEN,
+    'definitionID': definitionID,
+    'example': example,
+    'exampleID': exampleID,
+    'phonetic': phonetic,
+    'addedAt': addedAt.toIso8601String(),
   };
 
-  // ── Helper: label tampilan dari enum ──
   String get wordTypeLabel {
     switch (wordType) {
-      case WordType.noun:      return 'Noun';
-      case WordType.verb:      return 'Verb';
-      case WordType.adjective: return 'Adjective';
-      case WordType.adverb:    return 'Adverb';
-      case WordType.other:     return 'Other';
+      case WordType.noun:
+        return 'Noun';
+      case WordType.verb:
+        return 'Verb';
+      case WordType.adjective:
+        return 'Adjective';
+      case WordType.adverb:
+        return 'Adverb';
+      case WordType.other:
+        return 'Other';
     }
   }
 
-  // ── copyWith: membuat salinan dengan field tertentu diubah ──
   WordItem copyWith({
-    String?   translation,
-    String?   definition,
-    String?   example,
+    String? translation,
+    String? definitionEN,
+    String? definitionID,
+    String? example,
+    String? exampleID,
   }) {
     return WordItem(
-      id:          id,
-      word:        word,
+      id: id,
+      word: word,
       translation: translation ?? this.translation,
-      wordType:    wordType,
-      definition:  definition ?? this.definition,
-      example:     example    ?? this.example,
-      phonetic:    phonetic,
-      addedAt:     addedAt,
+      wordType: wordType,
+      definitionEN: definitionEN ?? this.definitionEN,
+      definitionID: definitionID ?? this.definitionID,
+      example: example ?? this.example,
+      exampleID: exampleID ?? this.exampleID,
+      phonetic: phonetic,
+      addedAt: addedAt,
     );
   }
 }

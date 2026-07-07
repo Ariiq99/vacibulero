@@ -3,17 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../viewmodels/treasury_viewmodel.dart';
 import '../../models/word_item.dart';
+import '../../services/app_theme.dart';
 import '../../router/app_router.dart';
 
-// ── VIEW: TreasuryScreen ───────────────────────────────────────
-// Menampilkan daftar kata di Word Treasury.
-// Menggunakan Consumer<TreasuryViewModel> untuk listen state.
 class TreasuryScreen extends StatelessWidget {
   const TreasuryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: VaciColors.surface,
       appBar: AppBar(
         title: const Text('Word Treasury 🏴'),
         leading: IconButton(
@@ -21,7 +20,6 @@ class TreasuryScreen extends StatelessWidget {
           onPressed: () => context.go(AppRoutes.home),
         ),
       ),
-      // ── Consumer: rebuild otomatis saat ViewModel berubah ──
       body: Consumer<TreasuryViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
@@ -29,19 +27,24 @@ class TreasuryScreen extends StatelessWidget {
           }
           return Column(
             children: [
-              // ── Stats bar ──
-              _StatsBar(vm: vm),
-              // ── Search bar ──
+              // ── Stats header ──
+              _TreasuryHeader(vm: vm),
+              // ── Search ──
               _SearchBar(vm: vm),
               // ── Filter chips ──
-              _FilterChips(vm: vm),
-              // ── List / empty state ──
+              _FilterRow(vm: vm),
+              // ── List ──
               Expanded(
                 child: vm.isEmpty
                     ? _EmptyState(onAdd: () => context.go(AppRoutes.addWord))
                     : vm.words.isEmpty
-                        ? const Center(child: Text('Tidak ada kata yang cocok.'))
-                        : _WordList(words: vm.words, vm: vm),
+                    ? const Center(
+                        child: Text(
+                          'Tidak ada kata yang cocok.',
+                          style: TextStyle(color: VaciColors.textSecondary),
+                        ),
+                      )
+                    : _WordList(words: vm.words, vm: vm),
               ),
             ],
           );
@@ -50,52 +53,148 @@ class TreasuryScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go(AppRoutes.addWord),
         icon: const Icon(Icons.add),
-        label: const Text('Tambah Kata'),
+        label: const Text(
+          'Tambah Kata',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: VaciColors.primary,
+        foregroundColor: Colors.white,
       ),
     );
   }
 }
 
-// ── Stats Bar ──
-class _StatsBar extends StatelessWidget {
+// ── Treasury Header dengan stats ──
+class _TreasuryHeader extends StatelessWidget {
   final TreasuryViewModel vm;
-  const _StatsBar({required this.vm});
+  const _TreasuryHeader({required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final stats = vm.stats;
     return Container(
-      color: cs.primaryContainer.withOpacity(0.3),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
+      color: VaciColors.primary,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
         children: [
-          _StatChip(label: 'Total', value: vm.totalWords.toString(), color: cs.primary),
-          const SizedBox(width: 8),
-          _StatChip(label: 'Noun',  value: (vm.stats[WordType.noun] ?? 0).toString(),      color: Colors.blue),
-          const SizedBox(width: 8),
-          _StatChip(label: 'Verb',  value: (vm.stats[WordType.verb] ?? 0).toString(),      color: Colors.green),
-          const SizedBox(width: 8),
-          _StatChip(label: 'Adj',   value: (vm.stats[WordType.adjective] ?? 0).toString(), color: Colors.orange),
-          const SizedBox(width: 8),
-          _StatChip(label: 'Adv',   value: (vm.stats[WordType.adverb] ?? 0).toString(),    color: Colors.purple),
+          // Total kata
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('📚', style: TextStyle(fontSize: 22)),
+              ),
+              const SizedBox(width: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${vm.totalWords} Kata',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Text(
+                    'di Word Treasury kamu',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Stats per kategori
+          Row(
+            children: WordType.values
+                .where((t) => t != WordType.other)
+                .map(
+                  (t) => Expanded(
+                    child: _StatChip(
+                      label: _short(t),
+                      value: stats[t] ?? 0,
+                      color: _color(t),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
         ],
       ),
     );
   }
+
+  String _short(WordType t) {
+    switch (t) {
+      case WordType.noun:
+        return 'Noun';
+      case WordType.verb:
+        return 'Verb';
+      case WordType.adjective:
+        return 'Adj';
+      case WordType.adverb:
+        return 'Adv';
+      default:
+        return '';
+    }
+  }
+
+  Color _color(WordType t) {
+    switch (t) {
+      case WordType.noun:
+        return const Color(0xFF64B5F6);
+      case WordType.verb:
+        return const Color(0xFF81C784);
+      case WordType.adjective:
+        return const Color(0xFFFFB74D);
+      case WordType.adverb:
+        return const Color(0xFFCE93D8);
+      default:
+        return Colors.white;
+    }
+  }
 }
 
 class _StatChip extends StatelessWidget {
-  final String label, value;
+  final String label;
+  final int value;
   final Color color;
-  const _StatChip({required this.label, required this.value, required this.color});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, color: Colors.white70),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -108,15 +207,20 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       child: TextField(
         onChanged: vm.search,
         decoration: InputDecoration(
           hintText: 'Cari kata...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const Icon(Icons.search, color: VaciColors.textSecondary),
           suffixIcon: vm.searchQuery.isNotEmpty
-              ? IconButton(icon: const Icon(Icons.clear), onPressed: vm.clearFilter)
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: vm.clearFilter,
+                )
               : null,
+          filled: true,
+          fillColor: Colors.white,
         ),
       ),
     );
@@ -124,9 +228,9 @@ class _SearchBar extends StatelessWidget {
 }
 
 // ── Filter Chips ──
-class _FilterChips extends StatelessWidget {
+class _FilterRow extends StatelessWidget {
   final TreasuryViewModel vm;
-  const _FilterChips({required this.vm});
+  const _FilterRow({required this.vm});
 
   @override
   Widget build(BuildContext context) {
@@ -136,11 +240,19 @@ class _FilterChips extends StatelessWidget {
       child: Row(
         children: [
           _chip(context, null, 'Semua'),
-          const SizedBox(width: 8),
-          ...WordType.values.map((t) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: _chip(context, t, t.name[0].toUpperCase() + t.name.substring(1)),
-          )),
+          const SizedBox(width: 6),
+          ...WordType.values
+              .where((t) => t != WordType.other)
+              .map(
+                (t) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: _chip(
+                    context,
+                    t,
+                    t.name[0].toUpperCase() + t.name.substring(1),
+                  ),
+                ),
+              ),
         ],
       ),
     );
@@ -152,6 +264,14 @@ class _FilterChips extends StatelessWidget {
       label: Text(label),
       selected: active,
       onSelected: (_) => vm.filterByType(type),
+      selectedColor: VaciColors.primary,
+      labelStyle: TextStyle(
+        color: active ? Colors.white : VaciColors.textPrimary,
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      ),
+      backgroundColor: Colors.white,
+      side: BorderSide(color: active ? VaciColors.primary : VaciColors.border),
     );
   }
 }
@@ -165,10 +285,10 @@ class _WordList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       itemCount: words.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, i) => _WordCard(item: words[i], vm: vm),
+      itemBuilder: (ctx, i) => _WordCard(item: words[i], vm: vm),
     );
   }
 }
@@ -181,41 +301,94 @@ class _WordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(item.word,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+    return VaciCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.word,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: VaciColors.dark,
+                  ),
                 ),
-                _TypeBadge(item.wordTypeLabel),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                  onPressed: () => _confirmDelete(context),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+              ),
+              WordTypeBadge(item.wordTypeLabel),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => _confirmDelete(context),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: VaciColors.errorLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    size: 16,
+                    color: VaciColors.error,
+                  ),
                 ),
-              ],
-            ),
-            if (item.phonetic.isNotEmpty)
-              Text(item.phonetic, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 4),
-            Text(item.translation,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500,
-                    color: Color(0xFF1A73E8))),
-            if (item.example.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text('"${item.example}"',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey,
-                      fontStyle: FontStyle.italic)),
+              ),
             ],
+          ),
+          if (item.phonetic.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              item.phonetic,
+              style: const TextStyle(
+                fontSize: 12,
+                color: VaciColors.textSecondary,
+              ),
+            ),
           ],
-        ),
+          const SizedBox(height: 8),
+          // Terjemahan
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: VaciColors.primaryLight,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              item.translation,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: VaciColors.primary,
+              ),
+            ),
+          ),
+          // Definisi (Bahasa Indonesia)
+          if (item.definition.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              item.definition,
+              style: const TextStyle(
+                fontSize: 13,
+                color: VaciColors.textPrimary,
+                height: 1.5,
+              ),
+            ),
+          ],
+          // Contoh kalimat
+          if (item.example.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              '"${item.example}"',
+              style: const TextStyle(
+                fontSize: 12,
+                color: VaciColors.textSecondary,
+                fontStyle: FontStyle.italic,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -224,39 +397,30 @@ class _WordCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Hapus kata?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Hapus kata?',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         content: Text('Hapus "${item.word}" dari Treasury?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           TextButton(
-            onPressed: () { Navigator.pop(context); vm.deleteWord(item.id); },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              vm.deleteWord(item.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: VaciColors.error,
+              minimumSize: const Size(80, 40),
+            ),
+            child: const Text('Hapus'),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _TypeBadge extends StatelessWidget {
-  final String label;
-  const _TypeBadge(this.label);
-  static const _colors = {
-    'Noun': Colors.blue, 'Verb': Colors.green,
-    'Adjective': Colors.orange, 'Adverb': Colors.purple,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _colors[label] ?? Colors.grey;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold)),
     );
   }
 }
@@ -269,24 +433,51 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('🪙', style: TextStyle(fontSize: 60)),
-          const SizedBox(height: 12),
-          const Text('Empty Treasure, Lets Dig In!',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          const Text('Tambah kata pertamamu sekarang.',
-              style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: onAdd,
-            icon: const Icon(Icons.add),
-            label: const Text('Tambah Kata'),
-            style: ElevatedButton.styleFrom(minimumSize: const Size(180, 46)),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: VaciColors.goldLight,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Center(
+                child: Text('🪙', style: TextStyle(fontSize: 48)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Empty Treasure,\nLets Dig In!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: VaciColors.dark,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tambah kata pertamamu dan mulai\nbangun koleksi kosakata kamu!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: VaciColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 28),
+            VaciButton(
+              label: 'Tambah Kata Pertama',
+              icon: Icons.add,
+              onPressed: onAdd,
+            ),
+          ],
+        ),
       ),
     );
   }

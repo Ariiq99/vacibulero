@@ -11,7 +11,7 @@ import '../../router/app_router.dart';
 // Sesi belajar dengan flip card untuk satu level Word Expedition.
 class FlipCardScreen extends StatefulWidget {
   final ExpeditionTheme theme;
-  final int             level;
+  final int level;
   const FlipCardScreen({super.key, required this.theme, required this.level});
 
   @override
@@ -20,17 +20,18 @@ class FlipCardScreen extends StatefulWidget {
 
 class _FlipCardScreenState extends State<FlipCardScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _animCtrl;
-  late Animation<double>    _anim;
+  late Animation<double> _anim;
 
   @override
   void initState() {
     super.initState();
     // Mulai sesi di ViewModel
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ExpeditionViewModel>()
-          .startSession(widget.theme, widget.level);
+      context.read<ExpeditionViewModel>().startSession(
+        widget.theme,
+        widget.level,
+      );
     });
 
     // Setup animasi flip
@@ -38,9 +39,10 @@ class _FlipCardScreenState extends State<FlipCardScreen>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _anim = Tween<double>(begin: 0, end: pi).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut),
-    );
+    _anim = Tween<double>(
+      begin: 0,
+      end: pi,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -66,7 +68,9 @@ class _FlipCardScreenState extends State<FlipCardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.theme.emoji} ${widget.theme.name} — Level ${widget.level}'),
+        title: Text(
+          '${widget.theme.emoji} ${widget.theme.name} — Level ${widget.level}',
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.go(AppRoutes.expedition),
@@ -79,7 +83,7 @@ class _FlipCardScreenState extends State<FlipCardScreen>
             return _SessionSummary(
               learned: vm.learnedCount,
               unknown: vm.unknownCount,
-              total:   vm.totalCards,
+              total: vm.totalCards,
               onFinish: () => context.go(AppRoutes.expedition),
             );
           }
@@ -93,16 +97,16 @@ class _FlipCardScreenState extends State<FlipCardScreen>
             children: [
               // ── Progress bar ──
               LinearProgressIndicator(
-                value: vm.totalCards > 0
-                    ? vm.currentIndex / vm.totalCards
-                    : 0,
+                value: vm.totalCards > 0 ? vm.currentIndex / vm.totalCards : 0,
                 minHeight: 4,
               ),
 
               // ── Counter ──
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -112,15 +116,25 @@ class _FlipCardScreenState extends State<FlipCardScreen>
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_outline,
-                            size: 16, color: Colors.green),
-                        Text(' ${vm.learnedCount}',
-                            style: const TextStyle(color: Colors.green)),
+                        const Icon(
+                          Icons.check_circle_outline,
+                          size: 16,
+                          color: Colors.green,
+                        ),
+                        Text(
+                          ' ${vm.learnedCount}',
+                          style: const TextStyle(color: Colors.green),
+                        ),
                         const SizedBox(width: 12),
-                        const Icon(Icons.cancel_outlined,
-                            size: 16, color: Colors.red),
-                        Text(' ${vm.unknownCount}',
-                            style: const TextStyle(color: Colors.red)),
+                        const Icon(
+                          Icons.cancel_outlined,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        Text(
+                          ' ${vm.unknownCount}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ],
                     ),
                   ],
@@ -131,7 +145,9 @@ class _FlipCardScreenState extends State<FlipCardScreen>
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 8),
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   child: GestureDetector(
                     onTap: () => _handleFlip(vm),
                     child: AnimatedBuilder(
@@ -147,8 +163,7 @@ class _FlipCardScreenState extends State<FlipCardScreen>
                           alignment: Alignment.center,
                           child: showBack
                               ? Transform(
-                                  transform: Matrix4.identity()
-                                    ..rotateY(pi),
+                                  transform: Matrix4.identity()..rotateY(pi),
                                   alignment: Alignment.center,
                                   child: _CardBack(card: card),
                                 )
@@ -177,15 +192,17 @@ class _FlipCardScreenState extends State<FlipCardScreen>
                               vm.markAsUnknown();
                               _handleFlipReset();
                             },
-                            icon: const Icon(Icons.close,
-                                color: Colors.red),
-                            label: const Text('Belum',
-                                style: TextStyle(color: Colors.red)),
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            label: const Text(
+                              'Belum',
+                              style: TextStyle(color: Colors.red),
+                            ),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 52),
                               side: const BorderSide(color: Colors.red),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
@@ -194,15 +211,15 @@ class _FlipCardScreenState extends State<FlipCardScreen>
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () async {
-                              final wordItem =
-                                  await vm.markAsLearned();
+                              final wordItem = await vm.markAsLearned();
                               _handleFlipReset();
                               // Auto-save ke Treasury jika belum ada
                               if (wordItem != null && context.mounted) {
-                                final treasury =
-                                    context.read<TreasuryViewModel>();
-                                final exists = await treasury
-                                    .wordExists(wordItem.word);
+                                final treasury = context
+                                    .read<TreasuryViewModel>();
+                                final exists = await treasury.wordExists(
+                                  wordItem.word,
+                                );
                                 if (!exists) {
                                   try {
                                     await treasury.addWord(wordItem);
@@ -218,7 +235,8 @@ class _FlipCardScreenState extends State<FlipCardScreen>
                               minimumSize: const Size(0, 52),
                               backgroundColor: Colors.green,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
@@ -271,7 +289,9 @@ class _CardFront extends StatelessWidget {
           Text(
             card.word,
             style: const TextStyle(
-              fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
           if (card.phonetic.isNotEmpty) ...[
@@ -279,7 +299,8 @@ class _CardFront extends StatelessWidget {
             Text(
               card.phonetic,
               style: TextStyle(
-                fontSize: 16, color: Colors.white.withOpacity(0.7),
+                fontSize: 16,
+                color: Colors.white.withOpacity(0.7),
               ),
             ),
           ],
@@ -331,7 +352,8 @@ class _CardBack extends StatelessWidget {
             Text(
               card.word,
               style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
                 color: Color(0xFF1A73E8),
               ),
             ),
@@ -340,14 +362,11 @@ class _CardBack extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               card.translation,
-              style: const TextStyle(
-                fontSize: 28, fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F0FE),
                 borderRadius: BorderRadius.circular(20),
@@ -355,7 +374,8 @@ class _CardBack extends StatelessWidget {
               child: Text(
                 card.wordType,
                 style: const TextStyle(
-                  fontSize: 12, color: Color(0xFF1A73E8),
+                  fontSize: 12,
+                  color: Color(0xFF1A73E8),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -365,8 +385,10 @@ class _CardBack extends StatelessWidget {
               Text(
                 '"${card.example}"',
                 style: const TextStyle(
-                  fontSize: 13, color: Colors.grey,
-                  fontStyle: FontStyle.italic, height: 1.5,
+                  fontSize: 13,
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
                 ),
               ),
             ],
@@ -404,31 +426,33 @@ class _SessionSummary extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               learned == total ? 'Level Selesai!' : 'Sesi Selesai!',
-              style: const TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _SummaryBadge(
-                    icon: Icons.check_circle_outline,
-                    label: 'Hafal',
-                    value: learned,
-                    color: Colors.green),
+                  icon: Icons.check_circle_outline,
+                  label: 'Hafal',
+                  value: learned,
+                  color: Colors.green,
+                ),
                 const SizedBox(width: 16),
                 _SummaryBadge(
-                    icon: Icons.cancel_outlined,
-                    label: 'Belum',
-                    value: unknown,
-                    color: Colors.red),
+                  icon: Icons.cancel_outlined,
+                  label: 'Belum',
+                  value: unknown,
+                  color: Colors.red,
+                ),
                 const SizedBox(width: 16),
                 _SummaryBadge(
-                    icon: Icons.percent,
-                    label: 'Skor',
-                    value: pct,
-                    color: const Color(0xFF1A73E8),
-                    suffix: '%'),
+                  icon: Icons.percent,
+                  label: 'Skor',
+                  value: pct,
+                  color: const Color(0xFF1A73E8),
+                  suffix: '%',
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -452,10 +476,10 @@ class _SessionSummary extends StatelessWidget {
 
 class _SummaryBadge extends StatelessWidget {
   final IconData icon;
-  final String   label;
-  final int      value;
-  final Color    color;
-  final String   suffix;
+  final String label;
+  final int value;
+  final Color color;
+  final String suffix;
   const _SummaryBadge({
     required this.icon,
     required this.label,
@@ -470,9 +494,14 @@ class _SummaryBadge extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 28),
         const SizedBox(height: 4),
-        Text('$value$suffix',
-            style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          '$value$suffix',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );

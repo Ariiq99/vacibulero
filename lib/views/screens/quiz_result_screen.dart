@@ -12,12 +12,16 @@ class QuizResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final score = session.scorePercent;
-    final emoji = score >= 80 ? '🏆' : score >= 60 ? '👍' : '💪';
-    final msg   = score >= 80
+    final emoji = score >= 80
+        ? '🏆'
+        : score >= 60
+        ? '👍'
+        : '💪';
+    final msg = score >= 80
         ? 'Luar biasa!'
         : score >= 60
-            ? 'Bagus! Terus semangat!'
-            : 'Terus berlatih!';
+        ? 'Bagus! Terus semangat!'
+        : 'Terus berlatih!';
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +45,9 @@ class QuizResultScreen extends StatelessWidget {
                     Text(
                       msg,
                       style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     // Score ring
@@ -49,7 +55,8 @@ class QuizResultScreen extends StatelessWidget {
                       alignment: Alignment.center,
                       children: [
                         SizedBox(
-                          width: 110, height: 110,
+                          width: 110,
+                          height: 110,
                           child: CircularProgressIndicator(
                             value: score / 100,
                             strokeWidth: 10,
@@ -58,8 +65,8 @@ class QuizResultScreen extends StatelessWidget {
                               score >= 80
                                   ? Colors.green
                                   : score >= 60
-                                      ? Colors.orange
-                                      : Colors.red,
+                                  ? Colors.orange
+                                  : Colors.red,
                             ),
                           ),
                         ),
@@ -72,9 +79,13 @@ class QuizResultScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const Text('Skor',
-                                style: TextStyle(
-                                    color: Colors.grey, fontSize: 12)),
+                            const Text(
+                              'Skor',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -91,8 +102,7 @@ class QuizResultScreen extends StatelessWidget {
                         const SizedBox(width: 24),
                         _ScoreStat(
                           label: 'Salah',
-                          value: session.totalQuestions -
-                              session.correctCount,
+                          value: session.totalQuestions - session.correctCount,
                           color: Colors.red,
                         ),
                         const SizedBox(width: 24),
@@ -113,8 +123,7 @@ class QuizResultScreen extends StatelessWidget {
             if (session.wrongWordIds.isNotEmpty) ...[
               const Text(
                 'Perlu dipelajari lagi:',
-                style: TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               ...session.answers
@@ -137,7 +146,8 @@ class QuizResultScreen extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -149,20 +159,27 @@ class QuizResultScreen extends StatelessWidget {
 
 class _ScoreStat extends StatelessWidget {
   final String label;
-  final int    value;
-  final Color  color;
-  const _ScoreStat(
-      {required this.label, required this.value, required this.color});
+  final int value;
+  final Color color;
+  const _ScoreStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('$value',
-            style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-        Text(label,
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(
+          '$value',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }
@@ -180,8 +197,7 @@ class _WrongAnswerCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            const Icon(Icons.cancel_outlined,
-                color: Colors.red, size: 18),
+            const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -189,15 +205,15 @@ class _WrongAnswerCard extends StatelessWidget {
                 children: [
                   Text(
                     'Jawabanmu: ${answer.userAnswer}',
-                    style: const TextStyle(
-                        fontSize: 13, color: Colors.red),
+                    style: const TextStyle(fontSize: 13, color: Colors.red),
                   ),
                   Text(
                     'Jawaban benar: ${answer.correctAnswer}',
                     style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500),
+                      fontSize: 13,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),

@@ -12,23 +12,23 @@ class TreasuryViewModel extends ChangeNotifier {
   TreasuryViewModel(this._repo);
 
   // ── State ──
-  List<WordItem>        _words      = [];
-  List<WordItem>        _filtered   = [];
-  WordType?             _activeFilter;
-  String                _searchQuery = '';
-  bool                  _isLoading  = false;
-  String?               _error;
-  Map<WordType, int>    _stats      = {};
+  List<WordItem> _words = [];
+  List<WordItem> _filtered = [];
+  WordType? _activeFilter;
+  String _searchQuery = '';
+  bool _isLoading = false;
+  String? _error;
+  Map<WordType, int> _stats = {};
 
   // ── Getters (View membaca state lewat getters) ──
-  List<WordItem>     get words        => _filtered;
-  List<WordItem>     get allWords     => _words;
-  WordType?          get activeFilter => _activeFilter;
-  String             get searchQuery  => _searchQuery;
-  bool               get isLoading    => _isLoading;
-  String?            get error        => _error;
-  int                get totalWords   => _words.length;
-  Map<WordType, int> get stats        => _stats;
+  List<WordItem> get words => _filtered;
+  List<WordItem> get allWords => _words;
+  WordType? get activeFilter => _activeFilter;
+  String get searchQuery => _searchQuery;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  int get totalWords => _words.length;
+  Map<WordType, int> get stats => _stats;
 
   bool get isEmpty => _words.isEmpty;
 
@@ -36,12 +36,12 @@ class TreasuryViewModel extends ChangeNotifier {
   Future<void> loadWords() async {
     _setLoading(true);
     try {
-      _words  = await _repo.getAll();
-      _stats  = await _repo.getStatsByType();
+      _words = await _repo.getAll();
+      _stats = await _repo.getStatsByType();
       _applyFilter();
-      _error  = null;
+      _error = null;
     } catch (e) {
-      _error  = e.toString();
+      _error = e.toString();
     } finally {
       _setLoading(false);
     }
@@ -52,12 +52,12 @@ class TreasuryViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       await _repo.add(item);
-      _words  = await _repo.getAll();
-      _stats  = await _repo.getStatsByType();
+      _words = await _repo.getAll();
+      _stats = await _repo.getStatsByType();
       _applyFilter();
-      _error  = null;
+      _error = null;
     } catch (e) {
-      _error  = e.toString();
+      _error = e.toString();
       rethrow; // lempar ke View untuk ditampilkan
     } finally {
       _setLoading(false);
@@ -80,7 +80,7 @@ class TreasuryViewModel extends ChangeNotifier {
 
   // ── SEARCH: cari kata ──
   void search(String query) {
-    _searchQuery  = query;
+    _searchQuery = query;
     _activeFilter = null; // reset filter saat search
     _applyFilter();
   }
@@ -88,14 +88,14 @@ class TreasuryViewModel extends ChangeNotifier {
   // ── FILTER: filter berdasarkan tipe kata ──
   void filterByType(WordType? type) {
     _activeFilter = type;
-    _searchQuery  = '';
+    _searchQuery = '';
     _applyFilter();
   }
 
   // ── CLEAR FILTER ──
   void clearFilter() {
     _activeFilter = null;
-    _searchQuery  = '';
+    _searchQuery = '';
     _applyFilter();
   }
 
@@ -106,10 +106,13 @@ class TreasuryViewModel extends ChangeNotifier {
   void _applyFilter() {
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
-      _filtered = _words.where((w) =>
-        w.word.toLowerCase().contains(q) ||
-        w.translation.toLowerCase().contains(q),
-      ).toList();
+      _filtered = _words
+          .where(
+            (w) =>
+                w.word.toLowerCase().contains(q) ||
+                w.translation.toLowerCase().contains(q),
+          )
+          .toList();
     } else if (_activeFilter != null) {
       _filtered = _words.where((w) => w.wordType == _activeFilter).toList();
     } else {

@@ -34,8 +34,7 @@ class ExpeditionScreen extends StatelessWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: vm.themes.length,
-            itemBuilder: (ctx, i) =>
-                _ThemeCard(theme: vm.themes[i], vm: vm),
+            itemBuilder: (ctx, i) => _ThemeCard(theme: vm.themes[i], vm: vm),
           );
         },
       ),
@@ -66,7 +65,9 @@ class _ThemeCard extends StatelessWidget {
                 Text(
                   theme.name,
                   style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.bold),
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -74,28 +75,28 @@ class _ThemeCard extends StatelessWidget {
             // ── Level buttons ──
             Row(
               children: theme.levels.map((lvl) {
-                final locked    = vm.isLevelLocked(theme.id, lvl.level);
+                final locked = vm.isLevelLocked(theme.id, lvl.level);
                 final completed = vm.isLevelCompleted(theme.id, lvl.level);
-                final progress  = vm.levelProgress(
-                    theme.id, lvl.level, lvl.words.length);
+                final progress = vm.levelProgress(
+                  theme.id,
+                  lvl.level,
+                  lvl.words.length,
+                );
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _LevelButton(
-                      level:     lvl.level,
-                      locked:    locked,
+                      level: lvl.level,
+                      locked: locked,
                       completed: completed,
-                      progress:  progress,
+                      progress: progress,
                       wordCount: lvl.words.length,
                       onTap: locked
                           ? null
                           : () => context.go(
-                                AppRoutes.flipCard,
-                                extra: {
-                                  'theme': theme,
-                                  'level': lvl.level,
-                                },
-                              ),
+                              AppRoutes.flipCard,
+                              extra: {'theme': theme, 'level': lvl.level},
+                            ),
                     ),
                   ),
                 );
@@ -110,10 +111,10 @@ class _ThemeCard extends StatelessWidget {
 
 // ── Level Button ──
 class _LevelButton extends StatelessWidget {
-  final int       level;
-  final bool      locked, completed;
-  final double    progress;
-  final int       wordCount;
+  final int level;
+  final bool locked, completed;
+  final double progress;
+  final int wordCount;
   final VoidCallback? onTap;
 
   const _LevelButton({
@@ -132,16 +133,16 @@ class _LevelButton extends StatelessWidget {
     IconData icon;
 
     if (locked) {
-      bg   = Colors.grey.shade100;
-      fg   = Colors.grey.shade400;
+      bg = Colors.grey.shade100;
+      fg = Colors.grey.shade400;
       icon = Icons.lock_outline;
     } else if (completed) {
-      bg   = Colors.green.shade50;
-      fg   = Colors.green.shade700;
+      bg = Colors.green.shade50;
+      fg = Colors.green.shade700;
       icon = Icons.check_circle_outline;
     } else {
-      bg   = const Color(0xFFE8F0FE);
-      fg   = const Color(0xFF1A73E8);
+      bg = const Color(0xFFE8F0FE);
+      fg = const Color(0xFF1A73E8);
       icon = Icons.play_circle_outline;
     }
 
@@ -160,7 +161,10 @@ class _LevelButton extends StatelessWidget {
             Text(
               'Level $level',
               style: TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.bold, color: fg),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: fg,
+              ),
             ),
             Text(
               '$wordCount kata',

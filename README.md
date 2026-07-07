@@ -1,60 +1,81 @@
 # Vacibulero 🏴
 
-> **AI-Powered English Vocabulary Learning App**  
-> Flutter MVVM Architecture Assignment — Sesi 7
+> **English Vocabulary Learning App — v2**
+> Flutter MVVM + Authentication + Indonesian Definitions + Redesigned UI
 
 ---
 
 ## 📋 Overview
 
-Vacibulero is a mobile application for learning English vocabulary, built using Flutter with the **MVVM (Model-View-ViewModel)** architectural design pattern. The app features three core modules:
+Vacibulero adalah aplikasi mobile belajar kosakata bahasa Inggris yang
+berpusat pada *self-improvement* pengguna, dibangun dengan Flutter
+menggunakan arsitektur **MVVM (Model-View-ViewModel)**.
 
-- 🏴 **Word Treasury** — Personal vocabulary bank with CRUD operations
-- 🗺️ **Word Expedition** — Themed vocabulary exploration with flip cards
-- ✅ **Treasure Check!** — Adaptive quiz system to test retention
+### Fitur Utama
+- 🏴 **Word Treasury** — bank kosakata pribadi dengan CRUD
+- 🗺️ **Word Expedition** — eksplorasi kata bertema dengan flip card
+- ✅ **Treasure Check!** — kuis adaptif untuk menguji hafalan
+- 🔐 **Autentikasi** — login & register dengan Supabase Auth *(baru di v2)*
+
+---
+
+## 🆕 Apa yang Baru di v2
+
+Update ini merupakan respons langsung terhadap catatan review dosen pada
+tahap pengembangan sebelumnya:
+
+| Catatan Dosen | Implementasi |
+|---|---|
+| Definisi kata masih Bahasa Inggris | `DictionaryRepository` kini menerjemahkan definisi & contoh kalimat ke Bahasa Indonesia via MyMemory API |
+| Tambahkan sistem auth | Supabase Auth terintegrasi penuh — Login, Register, Auth Gate |
+| Interface terlalu sederhana | Redesign total terinspirasi Duolingo — biru dominan, minimalist namun interaktif |
+
+### Detail Perubahan
+
+**1. Definisi Bahasa Indonesia**
+`DictionaryRepository.lookup()` kini mengirim 3 request paralel ke MyMemory API:
+terjemahan kata, terjemahan definisi, dan terjemahan contoh kalimat. Model
+`WordItem` diperluas dengan field `definitionEN`, `definitionID`, dan
+`exampleID`, dengan getter `definition` yang otomatis fallback ke versi
+Inggris jika terjemahan tidak tersedia.
+
+**2. Sistem Autentikasi**
+Ditambahkan layer auth lengkap: `AppUser` (model), `AuthRepository`
+(operasi Supabase Auth), `AuthViewModel` (state management), serta tiga
+layar baru — `AuthGate` (penjaga rute), `LoginScreen`, dan `RegisterScreen`.
+`AuthGate` dipasang sebagai halaman pertama di GoRouter dan secara otomatis
+menampilkan Login atau Home tergantung status sesi pengguna.
+
+**3. Redesign UI/UX**
+Dibangun design system baru di `services/app_theme.dart` (`VaciColors`,
+`VaciTheme`, `VaciCard`, `VaciButton`, `WordTypeBadge`) dengan palet biru
+dominan + aksen gold, rounded card dengan shadow halus, custom bottom
+navigation, `SliverAppBar` dengan greeting personalisasi, dan empty state
+bertema treasure yang lebih ekspresif.
 
 ---
 
 ## 🏗️ MVVM Pattern Overview
 
-MVVM separates the application into three distinct layers:
-
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                        VIEW                             │
-│  (Flutter Widgets — Consumer<ViewModel>)                │
-│  treasury_screen · expedition_screen · quiz_screen      │
-└───────────────────┬────────────────────┬────────────────┘
-                    │ watch/read         │ notifyListeners()
-┌───────────────────▼────────────────────▼────────────────┐
-│                     VIEWMODEL                           │
-│  (ChangeNotifier — manages state & business logic)      │
-│  TreasuryViewModel · ExpeditionViewModel · QuizViewModel│
-└───────────────────┬─────────────────────────────────────┘
-                    │ calls
-┌───────────────────▼─────────────────────────────────────┐
-│                      MODEL                              │
-│  (Entity classes + Repository — data operations)        │
-│  WordItem · ExpeditionTheme · QuizSession               │
-│  WordRepository · DictionaryRepository · QuizRepository │
-└─────────────────────────────────────────────────────────┘
+│                        VIEW                              │
+│  (Flutter Widgets — Consumer<ViewModel>)                 │
+│  login_screen · treasury_screen · expedition_screen ...  │
+└───────────────────┬────────────────────┬─────────────────┘
+                     │ watch/read         │ notifyListeners()
+┌────────────────────▼────────────────────▼─────────────────┐
+│                     VIEWMODEL                              │
+│  (ChangeNotifier — state & business logic)                 │
+│  AuthViewModel · TreasuryViewModel · ExpeditionViewModel ..│
+└────────────────────┬────────────────────────────────────────┘
+                     │ calls
+┌────────────────────▼────────────────────────────────────────┐
+│                      MODEL                                   │
+│  AppUser · WordItem · ExpeditionTheme · QuizSession           │
+│  AuthRepository · WordRepository · DictionaryRepository ...  │
+└────────────────────────────────────────────────────────────┘
 ```
-
-### Components
-
-| Layer | Role | Files |
-|---|---|---|
-| **Model** | Data classes and CRUD operations | `lib/models/`, `lib/repositories/` |
-| **ViewModel** | State management with `ChangeNotifier` | `lib/viewmodels/` |
-| **View** | UI widgets using `Consumer<VM>` | `lib/views/screens/` |
-
-### Key Concepts
-
-- **`ChangeNotifier`** — ViewModel base class; calls `notifyListeners()` when state changes
-- **`Consumer<VM>`** — View widget that rebuilds when the ViewModel notifies
-- **`MultiProvider`** — Provides all ViewModels to the entire widget tree
-- **`context.read<VM>()`** — Call ViewModel methods without subscribing to changes
-- **`context.watch<VM>()`** — Subscribe to ViewModel changes in build method
 
 ---
 
@@ -62,35 +83,47 @@ MVVM separates the application into three distinct layers:
 
 ```
 lib/
-├── main.dart                        # Entry point + MultiProvider setup
+├── main.dart                          # Entry point + Supabase init + MultiProvider
 ├── router/
-│   └── app_router.dart              # GoRouter configuration
+│   └── app_router.dart                # GoRouter — AuthGate sebagai initial route
+├── services/
+│   └── app_theme.dart                 # Design system (colors, theme, reusable widgets)
 ├── models/
-│   ├── word_item.dart               # WordItem entity + WordType enum
-│   ├── expedition_models.dart       # ExpeditionTheme, Level, Progress
-│   └── quiz_models.dart             # QuizQuestion, QuizAnswer, QuizSession
+│   ├── app_user.dart                  # [BARU] Model user terautentikasi
+│   ├── word_item.dart                 # [UPDATE] + definitionEN/ID, exampleID
+│   ├── expedition_models.dart
+│   └── quiz_models.dart
 ├── repositories/
-│   ├── word_repository.dart         # CRUD — SharedPreferences
-│   ├── dictionary_repository.dart   # Free Dictionary API + MyMemory API
-│   ├── expedition_repository.dart   # JSON asset loader + progress storage
-│   └── quiz_repository.dart         # Quiz generation + evaluation
+│   ├── auth_repository.dart           # [BARU] Operasi Supabase Auth
+│   ├── dictionary_repository.dart     # [UPDATE] Terjemahan definisi ke ID
+│   ├── word_repository.dart
+│   ├── expedition_repository.dart
+│   └── quiz_repository.dart
 ├── viewmodels/
-│   ├── treasury_viewmodel.dart      # State for Word Treasury
-│   ├── add_word_viewmodel.dart      # State for Add Word screen
-│   ├── expedition_viewmodel.dart    # State for Word Expedition
-│   └── quiz_viewmodel.dart          # State for Treasure Check!
+│   ├── auth_viewmodel.dart            # [BARU] State autentikasi
+│   ├── treasury_viewmodel.dart
+│   ├── add_word_viewmodel.dart        # [UPDATE] buildWordItem() field baru
+│   ├── expedition_viewmodel.dart      # [UPDATE] WordItem field baru
+│   └── quiz_viewmodel.dart
 └── views/
     └── screens/
-        ├── home_screen.dart         # Bottom nav hub
-        ├── treasury_screen.dart     # Word Treasury UI
-        ├── add_word_screen.dart     # Search & save new word
-        ├── expedition_screen.dart   # Theme & level list
-        ├── flip_card_screen.dart    # Flip card session
-        ├── quiz_screen.dart         # Quiz questions
-        └── quiz_result_screen.dart  # Session summary
+        ├── auth_gate.dart             # [BARU] Penjaga rute login/home
+        ├── login_screen.dart          # [BARU]
+        ├── register_screen.dart       # [BARU]
+        ├── home_screen.dart           # [REDESIGN] SliverAppBar, stats, nav baru
+        ├── treasury_screen.dart       # [REDESIGN] Header biru, stats, card baru
+        ├── add_word_screen.dart       # [REDESIGN] Tampilan definisi EN/ID terpisah
+        ├── expedition_screen.dart
+        ├── flip_card_screen.dart
+        ├── quiz_screen.dart
+        └── quiz_result_screen.dart
+test/
+├── quiz_repository_test.dart          # 19 test cases
+└── word_item_test.dart                # [UPDATE] 25 test cases (+ field baru, backward compat)
 assets/
 └── data/
-    └── expedition_content.json      # Local word content (3 themes × 3 levels)
+    └── expedition_content.json
+SUPABASE_SETUP.md                       # [BARU] Panduan setup Supabase
 ```
 
 ---
@@ -98,31 +131,27 @@ assets/
 ## 🚀 How to Run
 
 ### Prerequisites
-- Flutter SDK ≥ 3.0.0 — [Install Flutter](https://docs.flutter.dev/get-started/install)
-- Android emulator, iOS simulator, or physical device
+- Flutter SDK ≥ 3.0.0
+- Akun Supabase (gratis) — lihat `SUPABASE_SETUP.md` untuk panduan lengkap
 
 ### Steps
 
 ```bash
-# 1. Clone this repository
-git clone https://github.com/<your-username>/vacibulero.git
+# 1. Clone repository
+git clone https://github.com/Ariiq99/vacibulero.git
 cd vacibulero
 
 # 2. Install dependencies
 flutter pub get
 
-# 3. Run the application
+# 3. Setup Supabase — ikuti SUPABASE_SETUP.md
+#    lalu isi _supabaseUrl dan _supabaseAnonKey di lib/main.dart
+
+# 4. Run the application
 flutter run
-```
 
-### Build for release
-
-```bash
-# Android APK
-flutter build apk --release
-
-# iOS (requires macOS + Xcode)
-flutter build ios --release
+# 5. Jalankan unit test
+flutter test --reporter expanded
 ```
 
 ---
@@ -131,10 +160,11 @@ flutter build ios --release
 
 | Package | Version | Purpose |
 |---|---|---|
-| `provider` | ^6.1.2 | State management (MVVM ChangeNotifier) |
-| `go_router` | ^13.2.0 | Declarative navigation |
-| `http` | ^1.2.1 | HTTP requests to Dictionary & Translation APIs |
-| `shared_preferences` | ^2.2.3 | Local data persistence |
+| `provider` | ^6.1.2 | State management (MVVM) |
+| `go_router` | ^13.2.0 | Navigation |
+| `http` | ^1.2.1 | Dictionary & Translation API |
+| `shared_preferences` | ^2.2.3 | Local persistence (Word Treasury, Expedition progress) |
+| `supabase_flutter` | ^2.5.6 | **[BARU]** Autentikasi (Login/Register) |
 
 ---
 
@@ -142,30 +172,38 @@ flutter build ios --release
 
 | API | Endpoint | Purpose |
 |---|---|---|
-| Free Dictionary | `https://api.dictionaryapi.dev/api/v2/entries/en/{word}` | English definitions, phonetics, examples |
-| MyMemory | `https://api.mymemory.translated.net/get?q={word}&langpair=en\|id` | English → Indonesian translation |
-
-Both APIs are **free** and require no API key.
+| Free Dictionary | `api.dictionaryapi.dev` | Definisi EN, fonetik, jenis kata |
+| MyMemory | `api.mymemory.translated.net` | Terjemahan kata, **definisi**, dan **contoh kalimat** ke ID |
+| Supabase Auth | *(self-hosted via project)* | Login, Register, session management |
 
 ---
 
 ## 💡 Reflection
 
-Working on this assignment gave me a deep understanding of why architectural patterns like MVVM matter in real-world mobile development.
+Iterasi kedua proyek ini diarahkan langsung oleh masukan dosen pembimbing,
+yang memberikan pengalaman berharga tentang bagaimana feedback eksternal
+membentuk arah pengembangan produk secara nyata.
 
-Before this, I wrote all logic directly inside Flutter widgets, which made the code messy and hard to maintain. With MVVM, I learned how to cleanly separate concerns: the **Model** layer handles raw data and persistence through repositories, the **ViewModel** layer manages state and business logic independently of the UI, and the **View** layer simply observes and reacts to changes through `Consumer` widgets.
+Tantangan teknis terbesar adalah memastikan perubahan struktur `WordItem`
+(memecah `definition` menjadi `definitionEN` dan `definitionID`) tidak
+merusak kode yang sudah ada di berbagai layer — mulai dari repository,
+ViewModel, hingga unit test. Hal ini menegaskan pentingnya arsitektur MVVM:
+karena setiap layer terisolasi dengan baik, perubahan pada Model bisa
+ditelusuri secara sistematis ke semua tempat yang bergantung padanya, tanpa
+menimbulkan efek samping yang tidak terduga di UI.
 
-The most challenging part was understanding the `ChangeNotifier` lifecycle — specifically when to call `notifyListeners()` and how to avoid unnecessary rebuilds by using `context.read` for actions and `context.watch` or `Consumer` for state subscriptions. Another challenge was managing async operations correctly in ViewModels while keeping loading and error states in sync with the UI.
-
-The biggest takeaway is that MVVM makes code testable and scalable. Each ViewModel can be tested independently without the UI, which is a huge advantage as the app grows. I also appreciated how Provider's `MultiProvider` made dependency injection clean and explicit.
+Implementasi auth juga mengajarkan pentingnya pola *Auth Gate* — sebuah
+widget sederhana yang mendengarkan status autentikasi dan secara otomatis
+mengarahkan pengguna ke halaman yang sesuai, tanpa perlu logika kondisional
+yang tersebar di banyak tempat.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 - **Name:** Muhammad Ariiq Ariadanang
 - **Student ID:** 0706012414004
 - **Course:** Mobile Application Development
-- **Institution:** Ciputra University
+- **Institution:** Universitas Ciputra
 
 ---

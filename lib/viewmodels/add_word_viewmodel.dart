@@ -15,14 +15,14 @@ class AddWordViewModel extends ChangeNotifier {
   AddWordViewModel(this._dictRepo);
 
   // ── State ──
-  AddWordStatus    _status = AddWordStatus.idle;
+  AddWordStatus _status = AddWordStatus.idle;
   DictionaryResult? _result;
-  String?          _error;
+  String? _error;
 
   // ── Getters ──
-  AddWordStatus     get status  => _status;
-  DictionaryResult? get result  => _result;
-  String?           get error   => _error;
+  AddWordStatus get status => _status;
+  DictionaryResult? get result => _result;
+  String? get error => _error;
   bool get isLoading => _status == AddWordStatus.loading;
   bool get hasResult => _result != null;
 
@@ -32,14 +32,14 @@ class AddWordViewModel extends ChangeNotifier {
 
     _status = AddWordStatus.loading;
     _result = null;
-    _error  = null;
+    _error = null;
     notifyListeners();
 
     try {
       _result = await _dictRepo.lookup(word.trim());
       _status = AddWordStatus.success;
     } catch (e) {
-      _error  = e.toString();
+      _error = e.toString();
       _status = AddWordStatus.error;
     }
     notifyListeners();
@@ -50,14 +50,16 @@ class AddWordViewModel extends ChangeNotifier {
   WordItem buildWordItem() {
     if (_result == null) throw Exception('Tidak ada data kata.');
     return WordItem(
-      id:          DateTime.now().millisecondsSinceEpoch.toString(),
-      word:        _result!.word,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      word: _result!.word,
       translation: _result!.translation,
-      wordType:    _result!.wordType,
-      definition:  _result!.definition,
-      example:     _result!.example,
-      phonetic:    _result!.phonetic,
-      addedAt:     DateTime.now(),
+      wordType: _result!.wordType,
+      definitionEN: _result!.definitionEN,
+      definitionID: _result!.definitionID,
+      example: _result!.example,
+      exampleID: _result!.exampleID,
+      phonetic: _result!.phonetic,
+      addedAt: DateTime.now(),
     );
   }
 
@@ -65,7 +67,7 @@ class AddWordViewModel extends ChangeNotifier {
   void reset() {
     _status = AddWordStatus.idle;
     _result = null;
-    _error  = null;
+    _error = null;
     notifyListeners();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../views/screens/auth_gate.dart';
 import '../views/screens/home_screen.dart';
 import '../views/screens/treasury_screen.dart';
 import '../views/screens/add_word_screen.dart';
@@ -10,30 +11,26 @@ import '../models/expedition_models.dart';
 import '../models/quiz_models.dart';
 
 class AppRoutes {
-  static const home         = '/';
-  static const treasury     = '/treasury';
-  static const addWord      = '/add-word';
-  static const expedition   = '/expedition';
-  static const flipCard     = '/flip-card';
-  static const quiz         = '/quiz';
-  static const quizResult   = '/quiz-result';
+  static const home = '/';
+  static const treasury = '/treasury';
+  static const addWord = '/add-word';
+  static const expedition = '/expedition';
+  static const flipCard = '/flip-card';
+  static const quiz = '/quiz';
+  static const quizResult = '/quiz-result';
 }
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,
   routes: [
-    GoRoute(
-      path: AppRoutes.home,
-      builder: (_, __) => const HomeScreen(),
-    ),
+    // ── Auth Gate: halaman pertama yang dilihat ──
+    // AuthGate akan memutuskan tampilkan Login atau Home
+    GoRoute(path: AppRoutes.home, builder: (_, __) => const AuthGate()),
     GoRoute(
       path: AppRoutes.treasury,
       builder: (_, __) => const TreasuryScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.addWord,
-      builder: (_, __) => const AddWordScreen(),
-    ),
+    GoRoute(path: AppRoutes.addWord, builder: (_, __) => const AddWordScreen()),
     GoRoute(
       path: AppRoutes.expedition,
       builder: (_, __) => const ExpeditionScreen(),
@@ -48,15 +45,11 @@ final GoRouter appRouter = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: AppRoutes.quiz,
-      builder: (_, __) => const QuizScreen(),
-    ),
+    GoRoute(path: AppRoutes.quiz, builder: (_, __) => const QuizScreen()),
     GoRoute(
       path: AppRoutes.quizResult,
       builder: (_, state) {
-        final session = state.extra as QuizSession;
-        return QuizResultScreen(session: session);
+        return QuizResultScreen(session: state.extra as QuizSession);
       },
     ),
   ],
