@@ -1,100 +1,66 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/quiz_models.dart';
-import '../models/word_item.dart';
 import '../repositories/quiz_repository.dart';
 
-enum QuizStatus { idle, inProgress, finished }
-
-// ── VIEWMODEL: QuizViewModel ───────────────────────────────────
-// Mengelola state dan logika untuk halaman Treasure Check!
 class QuizViewModel extends ChangeNotifier {
-  final QuizRepository _repo;
-
-  QuizViewModel(this._repo);
-
-  // ── State ──
-  QuizStatus _status = QuizStatus.idle;
+  final QuizRepository _repository;
   List<QuizQuestion> _questions = [];
-  int _current = 0;
-  Map<String, String> _answers = {}; // {wordId: jawaban}
-  String? _selected; // opsi yang dipilih saat ini
-  QuizSession? _session;
-  String? _error;
+  int _currentIndex = 0;
+  List<QuizAnswer> _answers = [];
+  bool _isFinished = false;
+
+  QuizViewModel(this._repository);
 
   // ── Getters ──
-  QuizStatus get status => _status;
-  int get currentIdx => _current;
-  int get totalQ => _questions.length;
-  String? get selected => _selected;
-  QuizSession? get session => _session;
-  String? get error => _error;
-  bool get isFinished => _status == QuizStatus.finished;
-
+  List<QuizQuestion> get questions => _questions;
+  int get currentIndex => _currentIndex;
   QuizQuestion? get currentQuestion =>
-      _current < _questions.length ? _questions[_current] : null;
+      _currentIndex < _questions.length ? _questions[_currentIndex] : null;
+  List<QuizAnswer> get answers => _answers;
+  bool get isFinished => _isFinished;
+  int get totalQuestions => _questions.length;
+  int get correctCount => _answers.where((a) => a.isCorrect).length;
 
-  double get progress =>
-      _questions.isEmpty ? 0 : (_current / _questions.length);
-
-  // ── START: mulai sesi kuis dari daftar kata ──
-  void startQuiz(List<WordItem> words) {
-    try {
-      _questions = _repo.generateQuestions(words, count: 10);
-      _current = 0;
-      _answers = {};
-      _selected = null;
-      _session = null;
-      _error = null;
-      _status = QuizStatus.inProgress;
-    } catch (e) {
-      _error = e.toString();
-      _status = QuizStatus.idle;
-    }
+  // ── Load soal dari repository (diambil dari Word Treasury) ──
+  Future<void> loadQuestions() async {
+    _questions = await _repository.generateQuestions(); // <── ini
+    _currentIndex = 0;
+    _answers = [];
+    _isFinished = false;
     notifyListeners();
   }
 
-  // ── SELECT: pilih jawaban ──
-  void selectAnswer(String answer) {
-    if (_selected != null) return; // sudah dijawab, tidak bisa ganti
-    _selected = answer;
-    final q = currentQuestion;
-    if (q != null) _answers[q.wordId] = answer;
-    notifyListeners();
-  }
+  // ── Jawab soal ──
+  void answerQuestion(String userAnswer) {
+    if (currentQuestion == null || _isFinished) return;
 
-  // ── NEXT: ke soal berikutnya ──
-  void nextQuestion() {
-    if (_current < _questions.length - 1) {
-      _current++;
-      _selected = null;
-      notifyListeners();
+    final question = currentQuestion!;
+    final isCorrect = userAnswer.trim().toLowerCase() ==
+        question.correctAnswer.trim().toLowerCase();
+
+    _answers.add(
+      QuizAnswer(
+        wordId: question.wordId,
+        userAnswer: userAnswer,
+        correctAnswer: question.correctAnswer,
+        isCorrect: isCorrect,
+      ),
+    );
+
+    // Pindah ke soal berikutnya atau selesai
+    if (_currentIndex + 1 < _questions.length) {
+      _currentIndex++;
     } else {
-      _finishQuiz();
+      _isFinished = true;
     }
-  }
-
-  // ── Apakah jawaban yang dipilih benar ──
-  bool? get isCurrentAnswerCorrect {
-    if (_selected == null || currentQuestion == null) return null;
-    return _selected == currentQuestion!.correctAnswer;
-  }
-
-  // ── Private: selesaikan sesi ──
-  void _finishQuiz() {
-    _session = _repo.evaluateSession(_questions, _answers);
-    _status = QuizStatus.finished;
     notifyListeners();
   }
 
-  // ── RESET: kembali ke idle ──
+  // ── Reset kuis ──
   void reset() {
-    _status = QuizStatus.idle;
-    _questions = [];
-    _current = 0;
-    _answers = {};
-    _selected = null;
-    _session = null;
-    _error = null;
+    _currentIndex = 0;
+    _answers = [];
+    _isFinished = false;
     notifyListeners();
   }
 }

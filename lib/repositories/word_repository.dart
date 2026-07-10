@@ -2,10 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/word_item.dart';
 
-// ── REPOSITORY: WordRepository ─────────────────────────────────
-// Mengelola operasi data untuk Word Treasury.
-// Repository memisahkan logika penyimpanan dari ViewModel.
-// Sumber data: SharedPreferences (penyimpanan lokal).
 class WordRepository {
   static const _key = 'word_treasury';
 
@@ -13,28 +9,27 @@ class WordRepository {
   Future<List<WordItem>> getAll() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
-    if (raw == null) return [];
+    if (raw == null || raw.isEmpty) return [];
 
-    final List decoded = jsonDecode(raw) as List;
+    final List<dynamic> decoded = json.decode(raw);
     return decoded
         .map((e) => WordItem.fromJson(e as Map<String, dynamic>))
         .toList()
-      ..sort((a, b) => b.addedAt.compareTo(a.addedAt)); // terbaru dulu
+      ..sort((a, b) => b.addedAt.compareTo(a.addedAt));
   }
 
   // ── CREATE: tambah kata baru ──
   Future<void> add(WordItem item) async {
     final all = await getAll();
-    // Cegah duplikat (case-insensitive)
     final exists = all.any(
       (w) => w.word.toLowerCase() == item.word.toLowerCase(),
     );
     if (exists) throw Exception('Kata "${item.word}" sudah ada di Treasury.');
-    all.insert(0, item); // tambah di awal (terbaru)
+    all.insert(0, item);
     await _save(all);
   }
 
-  // ── DELETE: hapus kata berdasarkan id ──
+  // ── DELETE: hapus kata ──
   Future<void> delete(String id) async {
     final all = await getAll();
     all.removeWhere((w) => w.id == id);
@@ -50,7 +45,7 @@ class WordRepository {
     await _save(all);
   }
 
-  // ── SEARCH: cari kata berdasarkan query ──
+  // ── SEARCH: cari kata ──
   Future<List<WordItem>> search(String query) async {
     if (query.trim().isEmpty) return getAll();
     final all = await getAll();
@@ -64,13 +59,13 @@ class WordRepository {
         .toList();
   }
 
-  // ── FILTER: filter berdasarkan jenis kata ──
+  // ── FILTER: filter by type ──
   Future<List<WordItem>> filterByType(WordType type) async {
     final all = await getAll();
     return all.where((w) => w.wordType == type).toList();
   }
 
-  // ── CHECK: apakah kata sudah ada di Treasury ──
+  // ── CHECK: apakah kata sudah ada ──
   Future<bool> exists(String word) async {
     final all = await getAll();
     return all.any((w) => w.word.toLowerCase() == word.toLowerCase());
@@ -86,10 +81,12 @@ class WordRepository {
     return stats;
   }
 
-  // ── Private: simpan list ke SharedPreferences ──
+  // ── Private: simpan ke SharedPreferences ──
   Future<void> _save(List<WordItem> items) async {
     final prefs = await SharedPreferences.getInstance();
-    final encoded = jsonEncode(items.map((w) => w.toJson()).toList());
+    final List<Map<String, dynamic>> jsonList =
+        items.map((w) => w.toJson()).toList();
+    final String encoded = json.encode(jsonList); // <── eksplisit
     await prefs.setString(_key, encoded);
   }
 }

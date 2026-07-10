@@ -43,7 +43,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -78,7 +77,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 28),
 
-              // Nama
               _label('Nama Lengkap'),
               TextFormField(
                 controller: _nameCtrl,
@@ -95,7 +93,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Email
               _label('Email'),
               TextFormField(
                 controller: _emailCtrl,
@@ -112,7 +109,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Password
               _label('Password'),
               TextFormField(
                 controller: _passCtrl,
@@ -137,7 +133,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Konfirmasi password
               _label('Konfirmasi Password'),
               TextFormField(
                 controller: _confirmCtrl,
@@ -153,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 28),
 
-              // Error
+              // Error Message
               Consumer<AuthViewModel>(
                 builder: (_, auth, __) {
                   if (auth.error == null) return const SizedBox.shrink();
@@ -187,7 +182,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Back to login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -216,16 +210,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: VaciColors.textPrimary,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: VaciColors.textPrimary,
+          ),
+        ),
+      );
 
   Future<void> _handleRegister(BuildContext ctx, AuthViewModel auth) async {
     if (!_formKey.currentState!.validate()) return;
@@ -234,7 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password: _passCtrl.text,
       displayName: _nameCtrl.text.trim(),
     );
-    if (ok && ctx.mounted)
-      Navigator.pop(ctx); // kembali ke login / home via AuthGate
+    if (ok && ctx.mounted) Navigator.pop(ctx);
   }
 }

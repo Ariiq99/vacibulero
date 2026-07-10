@@ -56,8 +56,8 @@ class VacibuleroApp extends StatelessWidget {
           create: (ctx) => AddWordViewModel(ctx.read<DictionaryRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => ExpeditionViewModel(ctx.read<ExpeditionRepository>())
-            ..loadThemes(),
+          create: (context) => ExpeditionViewModel(
+              context.read<ExpeditionRepository>()), // == Selesai!
         ),
         ChangeNotifierProvider(
           create: (ctx) => QuizViewModel(ctx.read<QuizRepository>()),

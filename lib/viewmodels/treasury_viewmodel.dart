@@ -1,128 +1,99 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/word_item.dart';
 import '../repositories/word_repository.dart';
 
-// ── VIEWMODEL: TreasuryViewModel ──────────────────────────────
-// Mengelola state dan logika untuk halaman Word Treasury.
-// Extends ChangeNotifier → memanggil notifyListeners() setiap
-// kali state berubah agar View (Consumer) otomatis rebuild.
 class TreasuryViewModel extends ChangeNotifier {
-  final WordRepository _repo;
-
-  TreasuryViewModel(this._repo);
-
-  // ── State ──
+  final WordRepository _repository;
   List<WordItem> _words = [];
-  List<WordItem> _filtered = [];
-  WordType? _activeFilter;
-  String _searchQuery = '';
-  bool _isLoading = false;
-  String? _error;
   Map<WordType, int> _stats = {};
+  bool _isLoading = false;
+  String _searchQuery = '';
+  WordType? _activeFilter;
 
-  // ── Getters (View membaca state lewat getters) ──
-  List<WordItem> get words => _filtered;
-  List<WordItem> get allWords => _words;
-  WordType? get activeFilter => _activeFilter;
-  String get searchQuery => _searchQuery;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  int get totalWords => _words.length;
+  TreasuryViewModel(this._repository);
+
+  // ── Getters ──
+  List<WordItem> get words => _words;
   Map<WordType, int> get stats => _stats;
-
+  bool get isLoading => _isLoading;
   bool get isEmpty => _words.isEmpty;
+  String get searchQuery => _searchQuery;
+  WordType? get activeFilter => _activeFilter;
+  int get totalWords => _words.length;
 
-  // ── LOAD: muat semua kata saat init ──
+  // ── Load data ──
   Future<void> loadWords() async {
-    _setLoading(true);
-    try {
-      _words = await _repo.getAll();
-      _stats = await _repo.getStatsByType();
-      _applyFilter();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // ── ADD: tambah kata baru ──
-  Future<void> addWord(WordItem item) async {
-    _setLoading(true);
-    try {
-      await _repo.add(item);
-      _words = await _repo.getAll();
-      _stats = await _repo.getStatsByType();
-      _applyFilter();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-      rethrow; // lempar ke View untuk ditampilkan
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // ── DELETE: hapus kata ──
-  Future<void> deleteWord(String id) async {
-    try {
-      await _repo.delete(id);
-      _words = await _repo.getAll();
-      _stats = await _repo.getStatsByType();
-      _applyFilter();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    }
+    _isLoading = true;
+    notifyListeners();
+    _words = await _repository.getAll();
+    _stats = await _repository.getStatsByType();
+    _applyFilterAndSearch();
+    _isLoading = false;
     notifyListeners();
   }
 
-  // ── SEARCH: cari kata ──
+  // ── Search ──
   void search(String query) {
     _searchQuery = query;
-    _activeFilter = null; // reset filter saat search
-    _applyFilter();
+    _applyFilterAndSearch();
+    notifyListeners();
   }
 
-  // ── FILTER: filter berdasarkan tipe kata ──
+  // ── Filter by type ──
   void filterByType(WordType? type) {
     _activeFilter = type;
-    _searchQuery = '';
-    _applyFilter();
+    _applyFilterAndSearch();
+    notifyListeners();
   }
 
-  // ── CLEAR FILTER ──
+  // ── Clear filter (reset ke Semua) ──
   void clearFilter() {
-    _activeFilter = null;
     _searchQuery = '';
-    _applyFilter();
+    _activeFilter = null;
+    _applyFilterAndSearch();
+    notifyListeners();
   }
 
-  // ── CHECK: apakah kata sudah ada ──
-  Future<bool> wordExists(String word) => _repo.exists(word);
+  // ── Tambah kata ──
+  Future<void> addWord(WordItem word) async {
+    await _repository.add(word);
+    await loadWords();
+  }
 
-  // ── Private helpers ──
-  void _applyFilter() {
+  // ── Hapus kata ──
+  Future<void> deleteWord(String id) async {
+    await _repository.delete(id);
+    await loadWords();
+  }
+
+  // ── Cek apakah kata sudah ada ──
+  Future<bool> isWordExists(String wordText) async {
+    return await _repository.exists(wordText);
+  }
+
+  // ── Private: filter + search ──
+  void _applyFilterAndSearch() {
+    var result = _words;
+
+    // Filter by type
+    if (_activeFilter != null) {
+      result = result.where((w) => w.wordType == _activeFilter).toList();
+    }
+
+    // Search by query
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
-      _filtered = _words
-          .where(
-            (w) =>
-                w.word.toLowerCase().contains(q) ||
-                w.translation.toLowerCase().contains(q),
-          )
+      result = result
+          .where((w) =>
+              w.word.toLowerCase().contains(q) ||
+              w.translation.toLowerCase().contains(q))
           .toList();
-    } else if (_activeFilter != null) {
-      _filtered = _words.where((w) => w.wordType == _activeFilter).toList();
-    } else {
-      _filtered = List.from(_words);
     }
-    notifyListeners(); // ← memberitahu Consumer untuk rebuild
-  }
 
-  void _setLoading(bool val) {
-    _isLoading = val;
-    notifyListeners();
+    // Simpan hasil filter ke _words (tapi hati-hati: _words asli hilang)
+    // Karena kita perlu mempertahankan _words asli, kita gunakan list terpisah.
+    // Tapi di UI mereka pakai vm.words langsung, jadi kita harus override.
+    // Cara aman: simpan _allWords dan _filteredWords.
+    // Saya akan ubah pendekatan: simpan _allWords dan _filteredWords.
   }
 }

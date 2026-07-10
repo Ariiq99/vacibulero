@@ -1,87 +1,163 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/treasury_viewmodel.dart';
-import '../../services/app_theme.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../router/app_router.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _tab = 0;
 
   @override
   Widget build(BuildContext context) {
+    final treasuryVM = context.watch<TreasuryViewModel>();
+    final authVM = context.watch<AuthViewModel>();
+    final user = authVM.user;
+    final wordCount = treasuryVM.words.length;
+
+    // Menentukan skema warna aplikasi bertema edukasi modern
+    const primaryBlue = Color(0xFF2196F3);
+    const successGreen = Color(0xFF4CAF50);
+    const warningOrange = Color(0xFFFF9800);
+
+    // Ambil email user dengan aman
+    final userEmail = user?.email;
+    final displayName = userEmail != null && userEmail.contains('@')
+        ? userEmail.split('@').first
+        : 'Pengguna';
+
     return Scaffold(
-      backgroundColor: VaciColors.surface,
-      body: IndexedStack(
-        index: _tab,
-        children: const [
-          _HomeTab(),
-          _PlaceholderTab('Word Expedition', '🗺️'),
-          _PlaceholderTab('Treasure Check!', '✅'),
-        ],
-      ),
-      bottomNavigationBar: _BottomNav(
-        current: _tab,
-        onTap: (i) => setState(() => _tab = i),
-      ),
-    );
-  }
-}
+      backgroundColor: Colors.grey[50] ?? const Color(0xFFFAFAFA),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          // Mencegah terjadinya overflow screen pada layar smartphone kecil
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── REGION HEADER: Informasi & Sapaan Profil Pengguna ──
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Halo, $displayName! 👋',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Yuk, pertajam kosakata bahasan Inggrismu hari ini!',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Tombol Logout Aksi Cepat
+                    IconButton(
+                      icon: const Icon(Icons.logout_rounded,
+                          color: Colors.redAccent),
+                      onPressed: () => context.read<AuthViewModel>().signOut(),
+                      tooltip: 'Keluar Akun',
+                    )
+                  ],
+                ),
+                const SizedBox(height: 28),
 
-// ── Custom Bottom Nav ──────────────────────────────────────────
-class _BottomNav extends StatelessWidget {
-  final int current;
-  final ValueChanged<int> onTap;
-  const _BottomNav({required this.current, required this.onTap});
+                // ── REGION DASHBOARD STATISTIK: Ringkasan Progress Belajar ──
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _StatItem(
+                          label: 'Kata Hafal',
+                          value: '$wordCount',
+                          icon: Icons.collections_bookmark_rounded,
+                          color: primaryBlue),
+                      Container(width: 1, height: 40, color: Colors.grey[200]),
+                      _StatItem(
+                          label: 'Hari Streak',
+                          value: '0',
+                          icon: Icons.local_fire_department_rounded,
+                          color: warningOrange),
+                      Container(width: 1, height: 40, color: Colors.grey[200]),
+                      _StatItem(
+                          label: 'Level Selesai',
+                          value: '3',
+                          icon: Icons.stars_rounded,
+                          color: successGreen),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: VaciColors.border, width: 0.8)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Beranda',
-                index: 0,
-                current: current,
-                onTap: onTap,
-              ),
-              _NavItem(
-                icon: Icons.explore_rounded,
-                label: 'Expedition',
-                index: 1,
-                current: current,
-                onTap: onTap,
-              ),
-              _NavItem(
-                icon: Icons.quiz_rounded,
-                label: 'Quiz',
-                index: 2,
-                current: current,
-                onTap: onTap,
-              ),
-            ],
+                // Navigasi aktivitas pembelajaran
+                const Text(
+                  'Aktivitas Pembelajaran',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Integrasi 3 fitur utama
+                _FeatureCardRow(
+                  icon: Icons.library_books_rounded,
+                  title: 'Word Treasury',
+                  subtitle:
+                      'Simpan, kelompokkan, dan kelola semua kamus kosakata pribadimu secara real-time.',
+                  color: primaryBlue,
+                  onTap: () => context.pushNamed(AppRoutes.treasury),
+                ),
+                const SizedBox(height: 16),
+
+                _FeatureCardRow(
+                  icon: Icons.explore_rounded,
+                  title: 'Word Expedition',
+                  subtitle:
+                      'Jelajahi petualangan kata baru yang dikelompokkan berdasarkan tema khusus & level akademis.',
+                  color: successGreen,
+                  onTap: () => context.pushNamed(AppRoutes.expedition),
+                ),
+                const SizedBox(height: 16),
+
+                _FeatureCardRow(
+                  icon: Icons.offline_bolt_rounded,
+                  title: 'Treasure Check!',
+                  subtitle:
+                      'Uji kekuatan ingatan motormu melalui kuis adaptif berbasis performa langsung.',
+                  color: warningOrange,
+                  onTap: () => context.pushNamed(AppRoutes.quiz),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
@@ -89,451 +165,124 @@ class _BottomNav extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatelessWidget {
-  final IconData icon;
+// ── SUB-WIDGET COMPONENT: Item Statistik ──
+class _StatItem extends StatelessWidget {
   final String label;
-  final int index, current;
-  final ValueChanged<int> onTap;
-  const _NavItem({
-    required this.icon,
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatItem({
     required this.label,
-    required this.index,
-    required this.current,
-    required this.onTap,
+    required this.value,
+    required this.icon,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final selected = index == current;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onTap(index),
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: selected ? VaciColors.primaryLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: selected ? VaciColors.primary : VaciColors.textSecondary,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected
-                      ? VaciColors.primary
-                      : VaciColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Home Tab ───────────────────────────────────────────────────
-class _HomeTab extends StatelessWidget {
-  const _HomeTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthViewModel>();
-    final user = auth.user;
-
-    return CustomScrollView(
-      slivers: [
-        // ── SliverAppBar ──
-        SliverAppBar(
-          expandedHeight: 140,
-          pinned: true,
-          backgroundColor: VaciColors.primary,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [VaciColors.primaryDark, VaciColors.primary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          // Avatar
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.white.withOpacity(0.2),
-                            child: Text(
-                              user?.initials ?? '?',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Halo, ${user?.nameOrEmail ?? 'Pelajar'}! 👋',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const Text(
-                                  'Yuk lanjut belajar hari ini!',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Logout button
-                          IconButton(
-                            icon: const Icon(
-                              Icons.logout,
-                              color: Colors.white70,
-                              size: 20,
-                            ),
-                            onPressed: () => _confirmLogout(context),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A)),
             ),
-          ),
+          ],
         ),
-
-        SliverPadding(
-          padding: const EdgeInsets.all(20),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // ── Stats bar ──
-              Consumer<TreasuryViewModel>(
-                builder: (_, vm, __) => _StatsRow(totalWords: vm.totalWords),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Section: Fitur Utama ──
-              const VaciSectionLabel('Fitur Utama'),
-              _FeatureCard(
-                emoji: '🏴',
-                title: 'Word Treasury',
-                subtitle: 'Simpan & kelola koleksi kosakata kamu',
-                color: VaciColors.primaryLight,
-                accent: VaciColors.primary,
-                onTap: () => context.go(AppRoutes.treasury),
-              ),
-              const SizedBox(height: 10),
-              _FeatureCard(
-                emoji: '🗺️',
-                title: 'Word Expedition',
-                subtitle: 'Jelajahi kata baru per tema & level',
-                color: VaciColors.successLight,
-                accent: VaciColors.success,
-                onTap: () => context.go(AppRoutes.expedition),
-              ),
-              const SizedBox(height: 10),
-              _FeatureCard(
-                emoji: '✅',
-                title: 'Treasure Check!',
-                subtitle: 'Uji hafalan dengan kuis adaptif',
-                color: VaciColors.goldLight,
-                accent: VaciColors.gold,
-                onTap: () => context.go(AppRoutes.quiz),
-              ),
-              const SizedBox(height: 28),
-
-              // ── Motivational banner ──
-              _MotivationBanner(),
-              const SizedBox(height: 20),
-            ]),
-          ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 11,
+              fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
-
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Keluar?',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        content: const Text('Kamu yakin ingin keluar dari akun?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<AuthViewModel>().signOut();
-            },
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(80, 40),
-              backgroundColor: VaciColors.error,
-            ),
-            child: const Text('Keluar'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ── Stats Row ──
-class _StatsRow extends StatelessWidget {
-  final int totalWords;
-  const _StatsRow({required this.totalWords});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: VaciColors.border, width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _StatItem(
-            value: totalWords.toString(),
-            label: 'Kata Hafal',
-            emoji: '📚',
-          ),
-          _Divider(),
-          _StatItem(value: '0', label: 'Hari Streak', emoji: '🔥'),
-          _Divider(),
-          _StatItem(value: '3', label: 'Level Selesai', emoji: '🏆'),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String value, label, emoji;
-  const _StatItem({
-    required this.value,
-    required this.label,
-    required this.emoji,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: VaciColors.primary,
-            ),
-          ),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: VaciColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(width: 1, height: 40, color: VaciColors.border);
-  }
-}
-
-// ── Feature Card ──
-class _FeatureCard extends StatelessWidget {
-  final String emoji, title, subtitle;
-  final Color color, accent;
+// ── SUB-WIDGET COMPONENT: Kartu Navigasi Utama Premium (List Row Style) ──
+class _FeatureCardRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
   final VoidCallback onTap;
 
-  const _FeatureCard({
-    required this.emoji,
+  const _FeatureCardRow({
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
-    required this.accent,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accent.withOpacity(0.2), width: 1),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: Colors.grey[100] ?? Colors.transparent, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 24)),
-              ),
+              child: Icon(icon, size: 28, color: color),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: accent,
+                      color: Color(0xFF1A1A1A),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: VaciColors.textSecondary,
-                    ),
+                    style: TextStyle(
+                        fontSize: 11.5, color: Colors.grey[600], height: 1.3),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: accent.withOpacity(0.6)),
+            const SizedBox(width: 8),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: Colors.grey[400]),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Motivation Banner ──
-class _MotivationBanner extends StatelessWidget {
-  final _quotes = const [
-    'Setiap kata baru adalah kunci untuk dunia yang lebih luas. 🌍',
-    'Konsistensi adalah kunci. Belajar 15 menit sehari! ⚡',
-    'Kamu sudah selangkah lebih maju dari kemarin. 💪',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final quote = _quotes[DateTime.now().day % _quotes.length];
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [VaciColors.primaryDark, VaciColors.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          const Text('💡', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              quote,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.white,
-                height: 1.5,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  final String title, emoji;
-  const _PlaceholderTab(this.title, this.emoji);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 48)),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: VaciColors.dark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Fitur ini tersedia melalui menu beranda',
-            style: TextStyle(color: VaciColors.textSecondary),
-          ),
-        ],
       ),
     );
   }

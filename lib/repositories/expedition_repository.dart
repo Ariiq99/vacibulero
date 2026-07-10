@@ -11,14 +11,19 @@ class ExpeditionRepository {
 
   // ── READ: muat semua tema dari JSON asset ──
   Future<List<ExpeditionTheme>> loadThemes() async {
-    // rootBundle.loadString membaca file dari assets/ folder
-    final raw = await rootBundle.loadString(
-      'assets/data/expedition_content.json',
-    );
-    final List data = jsonDecode(raw) as List;
-    return data
-        .map((t) => ExpeditionTheme.fromJson(t as Map<String, dynamic>))
-        .toList();
+    try {
+      // rootBundle.loadString membaca file dari assets/ folder
+      final raw = await rootBundle.loadString(
+        'assets/data/expedition_content.json',
+      );
+      final List data = jsonDecode(raw) as List;
+      return data
+          .map((t) => ExpeditionTheme.fromJson(t as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      // Mengembalikan list kosong jika file JSON belum dibuat atau salah format agar app tidak crash
+      return [];
+    }
   }
 
   // ── READ: baca progres satu level ──

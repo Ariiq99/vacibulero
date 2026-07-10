@@ -45,7 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Logo placeholder
                     Container(
                       width: 72,
                       height: 72,
@@ -171,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 28),
 
-                      // Error message
+                      // Error message (Menampilkan pesan Indonesia dari ViewModel)
                       Consumer<AuthViewModel>(
                         builder: (_, auth, __) {
                           if (auth.error == null)

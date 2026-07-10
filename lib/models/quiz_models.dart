@@ -12,6 +12,7 @@ class QuizQuestion {
   final List<String> options; // untuk tipe multipleChoice
   final QuizDirection direction;
   final QuizType type;
+  final String? exampleSentence;
 
   const QuizQuestion({
     required this.wordId,
@@ -20,6 +21,7 @@ class QuizQuestion {
     required this.options,
     required this.direction,
     required this.type,
+    this.exampleSentence,
   });
 }
 

@@ -1,181 +1,150 @@
 import 'package:flutter/foundation.dart';
 import '../models/expedition_models.dart';
-import '../models/word_item.dart';
 import '../repositories/expedition_repository.dart';
 
-// ── VIEWMODEL: ExpeditionViewModel ────────────────────────────
-// Mengelola state untuk Word Expedition:
-// - Daftar tema yang tersedia
-// - Progres pengguna per level
-// - State sesi flip card yang sedang berjalan
 class ExpeditionViewModel extends ChangeNotifier {
   final ExpeditionRepository _repo;
 
-  ExpeditionViewModel(this._repo);
+  ExpeditionViewModel(this._repo) {
+    loadContent();
+  }
 
-  // ── State: daftar tema ──
+  // ── State ──
   List<ExpeditionTheme> _themes = [];
-  Map<String, ExpeditionProgress> _progress = {};
+  Map<String, ExpeditionProgress> _progressMap = {};
   bool _isLoading = false;
   String? _error;
 
-  // ── State: sesi flip card aktif ──
+  // State navigasi di dalam sesi belajar
   ExpeditionTheme? _activeTheme;
+  String _activeDifficulty = 'Beginner';
   int _activeLevel = 1;
   int _cardIndex = 0;
   bool _isFlipped = false;
-  List<String> _learnedInSession = [];
-  List<String> _unknownInSession = [];
+  final Set<String> _learnedInSession = {};
+  final Set<String> _unknownInSession = {};
 
-  // ── Getters: tema ──
+  // ── Getters ──
   List<ExpeditionTheme> get themes => _themes;
-  Map<String, ExpeditionProgress> get progress => _progress;
   bool get isLoading => _isLoading;
   String? get error => _error;
-
-  // ── Getters: sesi flip card ──
-  ExpeditionTheme? get activeTheme => _activeTheme;
   int get activeLevel => _activeLevel;
   bool get isFlipped => _isFlipped;
   int get learnedCount => _learnedInSession.length;
   int get unknownCount => _unknownInSession.length;
 
-  // Kartu yang sedang ditampilkan
-  ExpeditionWord? get currentCard {
+  // Mengganti tipe data lama ke WordContent sesuai model baru
+  WordContent? get currentCard {
     if (_activeTheme == null) return null;
     final words = _currentWords;
     if (_cardIndex >= words.length) return null;
     return words[_cardIndex];
   }
 
-  // Semua kata di level aktif
-  List<ExpeditionWord> get _currentWords {
+  // Helper dinamis untuk menyaring daftar kata berdasarkan Kategori & Kesulitan aktif
+  List<WordContent> get _currentWords {
     if (_activeTheme == null) return [];
-    final lvl = _activeTheme!.levels.firstWhere(
+
+    // Cari tingkat kesulitan yang cocok
+    final diffData = _activeTheme!.difficulties.firstWhere(
+      (d) => d.difficulty.toLowerCase() == _activeDifficulty.toLowerCase(),
+      orElse: () =>
+          ExpeditionDifficulty(difficulty: _activeDifficulty, levels: []),
+    );
+
+    // Cari level yang cocok
+    final lvl = diffData.levels.firstWhere(
       (l) => l.level == _activeLevel,
       orElse: () => ExpeditionLevel(level: 1, words: []),
     );
+
     return lvl.words;
   }
 
   int get totalCards => _currentWords.length;
   int get currentIndex => _cardIndex;
 
-  bool get isSessionDone => _cardIndex >= totalCards;
+  // ── Pemuatan Data Utama ──
+  Future<void> loadContent() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-  // ── Apakah level tertentu sudah selesai ──
-  bool isLevelCompleted(String themeId, int level) {
-    return _progress['${themeId}_$level']?.isCompleted ?? false;
+    try {
+      _themes = await _repo.loadThemes();
+      _progressMap = await _repo.getAllProgress();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  // ── Apakah level tertentu terkunci ──
+  // ── Logika Status Progress Pengguna ──
   bool isLevelLocked(String themeId, int level) {
-    if (level == 1) return false; // level 1 selalu terbuka
-    return !isLevelCompleted(themeId, level - 1);
+    if (level == 1) return false;
+    final prevProgress = _progressMap['${themeId}_${level - 1}'];
+    return prevProgress == null || !prevProgress.isCompleted;
   }
 
-  // Progres persentase sebuah level
+  bool isLevelCompleted(String themeId, int level) {
+    return _progressMap['${themeId}_$level']?.isCompleted ?? false;
+  }
+
   double levelProgress(String themeId, int level, int totalWords) {
-    final prog = _progress['${themeId}_$level'];
-    if (prog == null || totalWords == 0) return 0;
+    if (totalWords == 0) return 0.0;
+    final prog = _progressMap['${themeId}_$level'];
+    if (prog == null) return 0.0;
     return prog.completedWords.length / totalWords;
   }
 
-  // ── LOAD: muat semua tema dan progres ──
-  Future<void> loadThemes() async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      _themes = await _repo.loadThemes();
-      _progress = await _repo.getAllProgress();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    }
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  // ── START: mulai sesi flip card ──
-  void startSession(ExpeditionTheme theme, int level) {
+  // ── Logika Manajemen Sesi Belajar (FlipCard) ──
+  void startSession(ExpeditionTheme theme, String difficulty, int level) {
     _activeTheme = theme;
+    _activeDifficulty = difficulty;
     _activeLevel = level;
     _cardIndex = 0;
     _isFlipped = false;
-    _learnedInSession = [];
-    _unknownInSession = [];
+    _learnedInSession.clear;
+    _unknownInSession.clear;
     notifyListeners();
   }
 
-  // ── FLIP: balik kartu ──
   void flipCard() {
     _isFlipped = !_isFlipped;
     notifyListeners();
   }
 
-  // ── MARK: tandai kata sebagai Hafal ──
-  Future<WordItem?> markAsLearned() async {
-    final card = currentCard;
-    if (card == null || _activeTheme == null) return null;
+  Future<void> markAsLearned() async {
+    final current = currentCard;
+    if (current == null || _activeTheme == null) return;
 
-    _learnedInSession.add(card.word);
+    _learnedInSession.add(current.word);
+    _unknownInSession.remove(current.word);
 
-    // Simpan progres ke repository
-    await _repo.markWordLearned(
+    final updatedProgress = await _repo.markWordLearned(
       themeId: _activeTheme!.id,
       level: _activeLevel,
-      word: card.word,
+      word: current.word,
       totalWords: totalCards,
     );
 
-    // Refresh progress map
-    _progress = await _repo.getAllProgress();
-
-    // Buat WordItem untuk ditambah ke Treasury (dikembalikan ke View)
-    final wordItem = WordItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      word: card.word,
-      translation: card.translation,
-      wordType: _parseWordType(card.wordType),
-      definitionEN: '',
-      definitionID: '',
-      example: card.example,
-      exampleID: '',
-      phonetic: card.phonetic,
-      addedAt: DateTime.now(),
-    );
-
+    _progressMap[updatedProgress.key] = updatedProgress;
     _nextCard();
-    return wordItem; // View akan menyimpan ini ke TreasuryViewModel
   }
 
-  // ── MARK: tandai sebagai Belum Hafal ──
   void markAsUnknown() {
-    final card = currentCard;
-    if (card == null) return;
-    _unknownInSession.add(card.word);
+    final current = currentCard;
+    if (current == null) return;
+
+    _unknownInSession.add(current.word);
     _nextCard();
   }
 
-  // ── Private: maju ke kartu berikutnya ──
   void _nextCard() {
     _cardIndex++;
     _isFlipped = false;
     notifyListeners();
-  }
-
-  WordType _parseWordType(String type) {
-    switch (type.toLowerCase()) {
-      case 'noun':
-        return WordType.noun;
-      case 'verb':
-        return WordType.verb;
-      case 'adjective':
-        return WordType.adjective;
-      case 'adverb':
-        return WordType.adverb;
-      default:
-        return WordType.other;
-    }
   }
 }
